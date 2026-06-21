@@ -107,6 +107,11 @@ def normalize_asterank(df: pd.DataFrame) -> pd.DataFrame:
     out["desig_key"] = _col(df, "full_name").map(desig_key)
     out["asterank_value_usd"] = _num(_col(df, "price"))   # unreliable for NEOs
     out["asterank_dv_kms"] = _num(_col(df, "dv"))         # Benner; reliable
+    # Asterank carries a self-consistent epoch + mean anomaly. We borrow these to
+    # anchor propagation when SBDB elements lack an epoch (e.g. JPL API unavailable
+    # at pull time). Full SBDB epochs supersede this on the next clean re-pull.
+    out["_ast_epoch"] = _num(_col(df, "epoch"))
+    out["_ast_ma"] = _num(_col(df, "ma"))
     # carry asterank spectral type as a last-resort fallback for the filter
     out["_ast_spec"] = (
         _col(df, "spec_B").astype("string").fillna(_col(df, "spec_T").astype("string"))
@@ -123,6 +128,12 @@ def merge(sbdb: pd.DataFrame, asterank: pd.DataFrame) -> pd.DataFrame:
     gap = df["spec_type"].isna() & df["_ast_spec"].notna() & (df["_ast_spec"].str.lower() != "nan")
     df.loc[gap, "spec_type"] = df.loc[gap, "_ast_spec"]
     df.loc[gap, "spec_source"] = "measured:catalog"
+
+    # Anchor epoch + mean anomaly from Asterank where SBDB has no epoch, so the
+    # porkchop can propagate these objects even without a fresh SBDB epoch pull.
+    need_epoch = df["epoch_jd"].isna() & df["_ast_epoch"].notna()
+    df.loc[need_epoch, "epoch_jd"] = df.loc[need_epoch, "_ast_epoch"]
+    df.loc[need_epoch, "ma_deg"] = df.loc[need_epoch, "_ast_ma"]
 
     df = df.reindex(columns=INGEST_COLUMNS)
     return df

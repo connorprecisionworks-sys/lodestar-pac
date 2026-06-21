@@ -39,32 +39,44 @@ RAW_PATH = Path("data/raw/sbdb_neo.parquet")
 
 @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=2, min=2, max=30))
 def _get(params: dict) -> dict:
-    with httpx.Client(timeout=120.0) as client:
+    with httpx.Client(timeout=300.0) as client:
         resp = client.get(SBDB_QUERY_URL, params=params)
         resp.raise_for_status()
         return resp.json()
 
 
-def fetch_sbdb(group: str = "neo", limit: int | None = None) -> pd.DataFrame:
-    """Fetch near-Earth asteroids from SBDB into a raw dataframe.
+# The four near-Earth asteroid orbit classes. Pulling these separately keeps each
+# request small and reliable, instead of one giant slow sb-group=neo query.
+NEO_CLASSES = ["AMO", "APO", "ATE", "IEO"]
 
-    `group="neo"` + `kind=a` returns every near-Earth asteroid in one request.
+
+def fetch_sbdb(group: str = "neo", limit: int | None = None) -> pd.DataFrame:
+    """Fetch near-Earth asteroids from SBDB, chunked by orbit class.
+
     Columns are kept as returned (mostly strings); coercion happens in normalize.
     """
-    params = {
-        "fields": ",".join(SBDB_FIELDS),
-        "sb-group": group,
-        "sb-kind": "a",
-        "full-prec": "false",
-    }
-    if limit is not None:
-        params["limit"] = str(limit)
+    frames = []
+    fields = SBDB_FIELDS
+    for cls in NEO_CLASSES:
+        params = {
+            "fields": ",".join(SBDB_FIELDS),
+            "sb-class": cls,
+            "sb-kind": "a",
+            "full-prec": "false",
+        }
+        if limit is not None:
+            params["limit"] = str(limit)
+        print(f"[sbdb] querying class {cls}...", flush=True)
+        payload = _get(params)
+        fields = payload.get("fields", SBDB_FIELDS)
+        rows = payload.get("data", [])
+        print(f"[sbdb]   {cls}: {len(rows)} objects", flush=True)
+        frames.append(pd.DataFrame(rows, columns=fields))
 
-    payload = _get(params)
-    fields = payload.get("fields", SBDB_FIELDS)
-    rows = payload.get("data", [])
-    df = pd.DataFrame(rows, columns=fields)
-    print(f"[sbdb] fetched {len(df)} near-Earth asteroids ({len(fields)} fields)")
+    df = pd.concat(frames, ignore_index=True)
+    if "spkid" in df.columns:
+        df = df.drop_duplicates(subset=["spkid"]).reset_index(drop=True)
+    print(f"[sbdb] fetched {len(df)} near-Earth asteroids total ({len(fields)} fields)")
     return df
 
 
