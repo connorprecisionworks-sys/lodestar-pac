@@ -1,18 +1,18 @@
 :root{
   /* Carbon theme: true-black + cool grays, single sharp cyan accent.
      The --lime* token names are kept (now cyan) to avoid churn across files. */
-  --bg:#060708;
-  --panel:#0b0c0e;
-  --panel2:#121317;
-  --line:#191b1f;
-  --line2:#262a30;
-  --ink:#eceef1;
-  --muted:#868b93;
-  --faint:#52565d;
-  --lime:#46dfe6;
-  --lime-dim:#2f99a0;
-  --lime-glow:rgba(70,223,230,.13);
-  --c:#5ea9e6; --s:#c9a24a; --m:#e8634f; --good:#46dfe6;
+  --bg:#040405;
+  --panel:#0a0a0b;
+  --panel2:#0f0f11;
+  --line:#161618;
+  --line2:#242427;
+  --ink:#d8d9dc;
+  --muted:#83838a;
+  --faint:#4e4e55;
+  --lime:#ffffff;
+  --lime-dim:#9a9aa0;
+  --lime-glow:rgba(255,255,255,.12);
+  --c:#7e848c; --s:#abb0b6; --m:#f2f2f4; --good:#ffffff;
   --grotesk:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
 }
@@ -26,21 +26,30 @@ body{margin:0;color:var(--ink);font-family:var(--grotesk);font-size:14px;line-he
   background-size:48px 48px;background-position:-1px -1px;
 }
 body::before{content:"";position:fixed;inset:0;pointer-events:none;
-  background:radial-gradient(120% 80% at 50% -10%,rgba(70,223,230,.05),transparent 60%);}
+  background:radial-gradient(120% 80% at 50% -10%,rgba(255,255,255,.05),transparent 60%);}
 .mono{font-family:var(--mono)}
 .eyebrow{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:var(--muted)}
 .lime{color:var(--lime)}
 .wrap{max-width:1360px;margin:0 auto;padding:22px 24px 60px;position:relative}
 
 /* ---- header / telemetry ---- */
-header{position:relative;border:1px solid var(--line2);background:linear-gradient(180deg,#0e1114,#0b0d10);
+header{position:relative;border:1px solid var(--line2);background:linear-gradient(180deg,#0c0c0e,#070708);
   padding:18px 20px;overflow:hidden}
 header::after{content:"LODESTAR";position:absolute;right:-12px;bottom:-34px;font-family:var(--grotesk);
   font-weight:800;font-size:150px;letter-spacing:-.04em;color:#fff;opacity:.022;pointer-events:none;line-height:1}
 .brandrow{display:flex;align-items:center;gap:12px}
-.mark{width:16px;height:16px;background:var(--lime);box-shadow:0 0 16px var(--lime-glow)}
-.brandrow h1{margin:0;font-family:var(--grotesk);font-weight:800;font-size:21px;letter-spacing:.02em;text-transform:uppercase}
-.brandrow h1 .pac{color:var(--lime)}
+.brand-star{width:26px;height:26px;object-fit:contain}
+.brand-word{height:18px;width:auto;object-fit:contain}
+
+/* entry splash */
+.splash{position:fixed;inset:0;z-index:1000;background:#040405;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;transition:opacity .55s ease}
+.splash.out{opacity:0;pointer-events:none}
+.splash-star{width:min(52vw,400px);height:auto;object-fit:contain}
+.splash-word{width:min(40vw,330px);height:auto;object-fit:contain;margin-top:-6px}
+.splash-enter{font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--faint);margin-top:34px;animation:splashpulse 2.2s ease-in-out infinite}
+@keyframes splashpulse{0%,100%{opacity:.35}50%{opacity:.85}}
 .subbar{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
 .subbar .eyebrow{color:var(--faint)}
 .methods-link{color:var(--lime-dim) !important;text-decoration:none;border-bottom:1px solid transparent}
@@ -98,14 +107,14 @@ td.mono,td.num{font-variant-numeric:tabular-nums}
 .idxcol{width:30px;padding-right:6px;text-align:right}
 tbody tr{cursor:pointer;border-left:2px solid transparent;transition:background .08s}
 tbody tr:hover{background:rgba(255,255,255,.025)}
-tbody tr.sel{background:rgba(70,223,230,.06);border-left:2px solid var(--lime)}
+tbody tr.sel{background:rgba(255,255,255,.06);border-left:2px solid var(--lime)}
 .faint{color:var(--faint)}
 .objcell .oname{color:var(--ink)}
 .objcell .subtype{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:8px;letter-spacing:.04em}
 .objcell .est{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--s);
   margin-left:8px;border:1px solid rgba(214,169,63,.3);padding:0 4px;border-radius:2px}
 .objcell .pred{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--lime);
-  margin-left:8px;border:1px solid rgba(70,223,230,.35);padding:0 4px;border-radius:2px}
+  margin-left:8px;border:1px solid rgba(255,255,255,.35);padding:0 4px;border-radius:2px}
 td.val{color:var(--ink)}
 td.score{color:var(--lime)}
 .src{font-family:var(--mono);font-size:9px;color:var(--lime-dim);margin-left:6px;text-transform:uppercase;letter-spacing:.08em}

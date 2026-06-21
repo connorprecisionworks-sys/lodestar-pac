@@ -6,7 +6,7 @@ import { EARTH, PLANETS, orbitPoints } from "../lib/orbits.js";
 import { source } from "../api/source.js";
 
 const SCALE = 4;
-const COLOR = { C: [0.35, 0.66, 0.90], S: [0.84, 0.66, 0.25], M: [0.91, 0.39, 0.31] };
+const COLOR = { C: [0.44, 0.45, 0.49], S: [0.70, 0.71, 0.74], M: [0.96, 0.96, 0.98] };
 
 export default function CommandCenter({ selectedId, onSelect }) {
   const mountRef = useRef(null);
@@ -118,7 +118,7 @@ export default function CommandCenter({ selectedId, onSelect }) {
     if (i < 0) return;
     const arr = R.points.geometry.getAttribute("position");
     const m = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0x46dfe6 }));
+      new THREE.MeshBasicMaterial({ color: 0xeaeaea }));
     m.position.set(arr.getX(i), arr.getY(i), arr.getZ(i));
     R.scene.add(m);
     R.highlight = m;
@@ -130,10 +130,10 @@ export default function CommandCenter({ selectedId, onSelect }) {
       <div className="orbit-wrap">
         <div ref={mountRef} className="orbit-canvas cc" />
         <div className="orbit-legend">
-          <span><i style={{ background: "#5aa9e6" }} />C carbon</span>
-          <span><i style={{ background: "#d6a93f" }} />S stony</span>
-          <span><i style={{ background: "#e8634f" }} />M metallic</span>
-          <span><i style={{ background: "#46dfe6" }} />selected</span>
+          <span><i style={{ background: "#74757b" }} />C carbon</span>
+          <span><i style={{ background: "#b4b6ba" }} />S stony</span>
+          <span><i style={{ background: "#f2f2f4" }} />M metallic</span>
+          <span><i style={{ background: "#eaeaea", outline: "1px solid #555" }} />selected</span>
         </div>
       </div>
     </div>

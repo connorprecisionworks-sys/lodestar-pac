@@ -6,6 +6,7 @@ import RankingTable from "./components/RankingTable.jsx";
 import DetailPanel from "./components/DetailPanel.jsx";
 import OrbitViewer from "./components/OrbitViewer.jsx";
 import CommandCenter from "./components/CommandCenter.jsx";
+import SplashScreen from "./components/SplashScreen.jsx";
 
 export default function App() {
   const [ctrl, setCtrl] = useState({ weight: 0.5, spec: "all", dvMax: 40, q: "" });
@@ -18,6 +19,7 @@ export default function App() {
   const [trajectory, setTrajectory] = useState(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState(null);
+  const [showSplash, setShowSplash] = useState(true);
   const timer = useRef(null);
 
   useEffect(() => { api.meta().then(setMeta).catch((e) => setErr(String(e))); }, []);
@@ -50,11 +52,13 @@ export default function App() {
   };
 
   return (
-    <div className="wrap">
+    <>
+      {showSplash && <SplashScreen onDone={() => setShowSplash(false)} />}
+      <div className="wrap">
       <header>
         <div className="brandrow">
-          <div className="mark" />
-          <h1>Lodestar <span className="pac">PAC</span></h1>
+          <img className="brand-star" src="/brand/star.png" alt="" />
+          <img className="brand-word" src="/brand/wordmark.png" alt="Lodestar PAC" />
         </div>
         <div className="subbar">
           <span className="eyebrow"><b>Predictive Asteroid Characterization</b></span>
@@ -96,6 +100,7 @@ export default function App() {
         <span className="lime">▮</span> L1 Ingestion · L3 Screening Δv · L4 Ranking — Operational &nbsp;//&nbsp; L2 ML Characterization (Phase 4) · Launch-Window Simulation (Phase 2) — Pending<br />
         Orbits rendered from real Keplerian elements · Transfer arc schematic until Phase 2 · All figures estimates with uncertainty, never measurements
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
