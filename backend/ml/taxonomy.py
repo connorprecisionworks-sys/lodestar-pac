@@ -24,24 +24,38 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import LeaveOneOut
 
 from backend.ranking.value import complex_of
 
 STORE = Path("data/processed/asteroids.parquet")  # normalized store (pre-enrich)
 OUT = Path("data/models/taxonomy_predictions.parquet")
-FEATURES = ["albedo", "H_mag", "a_au", "e", "i_deg"]
+FEATURES_BASE = ["albedo", "H_mag", "a_au", "e", "i_deg"]
+DERIVED = ["tisserand", "q_au", "Q_au"]
+FEATURES_EXT = FEATURES_BASE + DERIVED
+FEATURES = FEATURES_BASE  # kept for the test import
 CLASSES = ["C", "S", "M"]
+A_JUP = 5.204  # AU
 
 
 def _model() -> RandomForestClassifier:
     # shallow + balanced: the training set is small and S-heavy, so we cap depth
     # to avoid memorising and weight classes so C/M are not ignored.
     return RandomForestClassifier(
-        n_estimators=400, max_depth=4, min_samples_leaf=3,
-        class_weight="balanced", random_state=42,
+        n_estimators=200, max_depth=4, min_samples_leaf=3,
+        class_weight="balanced", random_state=42, n_jobs=-1,
     )
+
+
+def add_derived(df: pd.DataFrame) -> pd.DataFrame:
+    """Dynamical features: Tisserand parameter wrt Jupiter, perihelion, aphelion."""
+    a, e = df["a_au"], df["e"]
+    i = np.radians(df["i_deg"])
+    df["tisserand"] = A_JUP / a + 2 * np.cos(i) * np.sqrt((a / A_JUP) * (1 - e**2))
+    df["q_au"] = a * (1 - e)
+    df["Q_au"] = a * (1 + e)
+    return df
 
 
 def load_frames():
@@ -49,43 +63,71 @@ def load_frames():
     df["_label"] = df["spec_type"].map(
         lambda s: complex_of(None if pd.isna(s) else str(s))
     )  # C/S/M or None (unmeasured)
-    feat_ok = df[FEATURES].notna().all(axis=1)
+    df = add_derived(df)
+    feat_ok = df[FEATURES_BASE].notna().all(axis=1)
     labeled = df[feat_ok & df["_label"].notna()].copy()
     predict = df[feat_ok & df["_label"].isna()].copy()
     return df, labeled, predict
 
 
-def evaluate(X: np.ndarray, y: np.ndarray) -> None:
-    """Leave-one-out cross-validation (honest for a tiny dataset)."""
+def _loo(X: np.ndarray, y: np.ndarray):
+    """Leave-one-out predictions + out-of-fold max-probabilities."""
     loo = LeaveOneOut()
     preds = np.empty(len(y), dtype=object)
+    conf = np.empty(len(y), dtype=float)
     for tr, te in loo.split(X):
         m = _model().fit(X[tr], y[tr])
-        preds[te[0]] = m.predict(X[te])[0]
-    labels = [c for c in CLASSES if c in set(y)]
-    print("\n[taxonomy] ---- leave-one-out cross-validation ----")
-    print(f"  trained on {len(y)} labelled objects (features: {', '.join(FEATURES)})")
-    base = pd.Series(y).value_counts(normalize=True).max()
+        p = m.predict_proba(X[te])[0]
+        preds[te[0]] = m.classes_[p.argmax()]
+        conf[te[0]] = p.max()
+    return preds, conf
+
+
+def evaluate(X: np.ndarray, y: np.ndarray, name: str):
+    preds, conf = _loo(X, y)
     acc = (preds == y).mean()
-    print(f"  accuracy: {acc:.0%}   (majority-class baseline: {base:.0%})")
-    print("  confusion matrix (rows = true, cols = predicted):")
-    cm = confusion_matrix(y, preds, labels=labels)
-    print("        " + "  ".join(f"{c:>4}" for c in labels))
-    for c, row in zip(labels, cm, strict=True):
-        print(f"    {c:>3} " + "  ".join(f"{v:>4}" for v in row))
-    print(classification_report(y, preds, labels=labels, zero_division=0))
+    base = pd.Series(y).value_counts(normalize=True).max()
+    print(f"  [{name:9}] LOO accuracy {acc:.0%}  (baseline {base:.0%})")
+    return acc, preds, conf
+
+
+def reliability(y, preds, conf) -> None:
+    print("  confidence reliability (LOO):")
+    for lo, hi in [(0.0, 0.5), (0.5, 0.7), (0.7, 1.01)]:
+        mask = (conf >= lo) & (conf < hi)
+        if mask.sum():
+            a = (preds[mask] == y[mask]).mean()
+            top = min(hi, 1.0)
+            print(f"    conf {lo:.1f}-{top:.1f}: {int(mask.sum()):>3} objs, accuracy {a:.0%}")
 
 
 def main() -> None:
     df, labeled, predict = load_frames()
-    X = labeled[FEATURES].to_numpy(float)
     y = labeled["_label"].to_numpy()
     print(f"[taxonomy] labelled+albedo: {len(labeled)} | albedo-only to predict: {len(predict)}")
 
-    evaluate(X, y)
+    print("\n[taxonomy] ---- feature-set comparison (leave-one-out) ----")
+    Xb = labeled[FEATURES_BASE].to_numpy(float)
+    Xe = labeled[FEATURES_EXT].to_numpy(float)
+    acc_b, pb, cb = evaluate(Xb, y, "albedo+orb")
+    acc_e, pe, ce = evaluate(Xe, y, "+dynamical")
+
+    # keep the dynamical features only if they actually help (reuse the LOO above)
+    use_ext = acc_e > acc_b
+    feats, preds, conf = (FEATURES_EXT, pe, ce) if use_ext else (FEATURES_BASE, pb, cb)
+    print("  -> using " + ("extended (dynamical features help)" if use_ext
+                            else "base (dynamical features did not help)"))
+
+    X = labeled[feats].to_numpy(float)
+    labels = [c for c in CLASSES if c in set(y)]
+    print("  confusion (rows=true, cols=pred): " + " ".join(labels))
+    cm = confusion_matrix(y, preds, labels=labels)
+    for c, row in zip(labels, cm, strict=True):
+        print(f"    {c:>3} " + "  ".join(f"{v:>3}" for v in row))
+    reliability(y, np.asarray(preds), conf)
 
     model = _model().fit(X, y)
-    Xp = predict[FEATURES].to_numpy(float)
+    Xp = predict[feats].to_numpy(float)
     proba = model.predict_proba(Xp)
     classes = list(model.classes_)
     idx = proba.argmax(axis=1)
