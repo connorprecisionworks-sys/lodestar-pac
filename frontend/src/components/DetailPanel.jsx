@@ -1,11 +1,4 @@
-function fmtUSD(v) {
-  if (v == null) return "-";
-  if (v >= 1e15) return "$" + (v / 1e15).toFixed(2) + "Q";
-  if (v >= 1e12) return "$" + (v / 1e12).toFixed(2) + "T";
-  if (v >= 1e9) return "$" + (v / 1e9).toFixed(2) + "B";
-  if (v >= 1e6) return "$" + (v / 1e6).toFixed(2) + "M";
-  return "$" + Math.round(v);
-}
+import { fmtUSD } from "../lib/format.js";
 
 function Row({ k, v }) {
   return <div className="kv"><span>{k}</span><span className="mono">{v}</span></div>;

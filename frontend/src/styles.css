@@ -83,16 +83,29 @@ select:focus,input[type=text]:focus{border-color:var(--lime-dim);outline:none}
 /* ---- table ---- */
 table{width:100%;border-collapse:collapse;font-size:13px}
 .table-scroll{overflow-x:auto}
-th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
-th{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);cursor:pointer;user-select:none;border-bottom:1px solid var(--line2)}
-th:hover{color:var(--lime)}
+th,td{text-align:left;padding:0 14px;height:30px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+.ranktable thead th{height:32px}
+.ranktable tbody td{height:44px}
+th{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--faint);cursor:pointer;user-select:none;border-bottom:1px solid var(--line2);font-weight:500}
+th:hover{color:var(--muted)}
+th.active{color:var(--lime)}
 th.num,td.num{text-align:right}
-tbody tr{cursor:pointer;border-left:2px solid transparent}
-tbody tr:hover{background:rgba(199,245,59,.04)}
-tbody tr.sel{background:var(--lime-glow);border-left:2px solid var(--lime)}
+td.mono,td.num{font-variant-numeric:tabular-nums}
+.idxcol{width:30px;padding-right:6px;text-align:right}
+tbody tr{cursor:pointer;border-left:2px solid transparent;transition:background .08s}
+tbody tr:hover{background:rgba(255,255,255,.025)}
+tbody tr.sel{background:rgba(199,245,59,.06);border-left:2px solid var(--lime)}
 .faint{color:var(--faint)}
-.pill{font-family:var(--mono);font-size:10px;padding:1px 6px;border:1px solid var(--line2)}
+.objcell .oname{color:var(--ink)}
+.objcell .subtype{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:8px;letter-spacing:.04em}
+.objcell .est{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--s);
+  margin-left:8px;border:1px solid rgba(214,169,63,.3);padding:0 4px;border-radius:2px}
+td.val{color:var(--ink)}
+td.score{color:var(--lime)}
+.src{font-family:var(--mono);font-size:9px;color:var(--lime-dim);margin-left:6px;text-transform:uppercase;letter-spacing:.08em}
+.pill{font-family:var(--mono);font-size:10px;padding:1px 7px;border:1px solid var(--line2);letter-spacing:.04em}
 .pill.C{color:var(--c)} .pill.S{color:var(--s)} .pill.M{color:var(--m)}
+.pill.dim{opacity:.5}
 .tagk{font-family:var(--mono);font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.08em}
 .tagk.benner{color:var(--lime-dim)}
 .assumed{color:var(--s);font-style:normal}
