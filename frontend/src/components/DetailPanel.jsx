@@ -1,5 +1,6 @@
-import { fmtUSD, jdToDate } from "../lib/format.js";
+import { fmtQty, fmtUSD, jdToDate } from "../lib/format.js";
 import { missionProfile } from "../lib/mission.js";
+import { missionCost, prospectivity, valueToCost } from "../lib/mining.js";
 import PorkchopPlot from "./PorkchopPlot.jsx";
 import AsteroidSpecimen from "./AsteroidSpecimen.jsx";
 import MaterialBreakdown from "./MaterialBreakdown.jsx";
@@ -8,7 +9,7 @@ function Row({ k, v }) {
   return <div className="kv"><span>{k}</span><span className="mono">{v}</span></div>;
 }
 
-export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
+export default function DetailPanel({ detail, trajectory, busy, onCompute, meta }) {
   if (!detail) {
     return <div className="panel"><h2 data-idx="03">Object Detail</h2>
       <p className="note">Select a target from the table to load its orbit, value breakdown, and run a trajectory estimate.</p></div>;
@@ -49,6 +50,15 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
           </>
         );
       })()}
+
+      {meta && detail.value_usd != null && (
+        <>
+          <h3>Mining assessment</h3>
+          <Row k="Prospectivity" v={`${prospectivity(detail, meta)} / 100`} />
+          <Row k="Est. mission cost" v={fmtUSD(missionCost(detail.dv_kms))} />
+          <Row k="Value-to-cost" v={`${fmtQty(valueToCost(detail))}×`} />
+        </>
+      )}
 
       <button className="primary" disabled={busy} onClick={() => onCompute(detail.id)}>
         {busy ? "Computing launch windows..." : "Compute trajectory"}

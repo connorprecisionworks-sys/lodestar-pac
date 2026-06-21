@@ -6,6 +6,7 @@ import RankingTable from "./components/RankingTable.jsx";
 import DetailPanel from "./components/DetailPanel.jsx";
 import OrbitViewer from "./components/OrbitViewer.jsx";
 import CommandCenter from "./components/CommandCenter.jsx";
+import TopTargets from "./components/TopTargets.jsx";
 import SplashScreen from "./components/SplashScreen.jsx";
 
 export default function App() {
@@ -90,9 +91,11 @@ export default function App() {
             <h2 data-idx="02">Orbit View <span className="note">Heliocentric · real elements</span></h2>
             <OrbitViewer detail={detail} trajectory={trajectory} />
           </div>
-          <DetailPanel detail={detail} trajectory={trajectory} busy={busy} onCompute={onCompute} />
+          <DetailPanel detail={detail} trajectory={trajectory} busy={busy} onCompute={onCompute} meta={meta} />
         </div>
       </div>
+
+      <TopTargets meta={meta} selectedId={selectedId} onSelect={setSelectedId} />
 
       <CommandCenter selectedId={selectedId} onSelect={setSelectedId} />
 
