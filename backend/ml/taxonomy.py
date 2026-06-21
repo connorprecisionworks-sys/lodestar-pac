@@ -27,7 +27,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import LeaveOneOut
 
-STORE = Path("data/processed/asteroids_enriched.parquet")
+from backend.ranking.value import complex_of
+
+STORE = Path("data/processed/asteroids.parquet")  # normalized store (pre-enrich)
 OUT = Path("data/models/taxonomy_predictions.parquet")
 FEATURES = ["albedo", "H_mag", "a_au", "e", "i_deg"]
 CLASSES = ["C", "S", "M"]
@@ -44,9 +46,12 @@ def _model() -> RandomForestClassifier:
 
 def load_frames():
     df = pd.read_parquet(STORE)
+    df["_label"] = df["spec_type"].map(
+        lambda s: complex_of(None if pd.isna(s) else str(s))
+    )  # C/S/M or None (unmeasured)
     feat_ok = df[FEATURES].notna().all(axis=1)
-    labeled = df[feat_ok & ~df["spec_is_assumed"].fillna(True)].copy()
-    predict = df[feat_ok & df["spec_is_assumed"].fillna(True)].copy()
+    labeled = df[feat_ok & df["_label"].notna()].copy()
+    predict = df[feat_ok & df["_label"].isna()].copy()
     return df, labeled, predict
 
 
@@ -74,7 +79,7 @@ def evaluate(X: np.ndarray, y: np.ndarray) -> None:
 def main() -> None:
     df, labeled, predict = load_frames()
     X = labeled[FEATURES].to_numpy(float)
-    y = labeled["value_complex"].to_numpy()
+    y = labeled["_label"].to_numpy()
     print(f"[taxonomy] labelled+albedo: {len(labeled)} | albedo-only to predict: {len(predict)}")
 
     evaluate(X, y)

@@ -74,7 +74,10 @@ VALUE_COLUMNS = [
     "value_high",       # upper bound of the uncertainty band
     "value_complex",    # compositional complex used (C/S/M)
     "size_source",      # "measured" | "h+albedo" | "h+assumed-albedo"
-    "spec_is_assumed",  # True when taxonomy was assumed, not measured
+    "spec_is_assumed",  # True when taxonomy was assumed (or ML-predicted), not measured
+    "type_source",      # "measured" | "ml-predicted" | "assumed"
+    "ml_complex",       # ML-predicted complex (C/S/M), if any
+    "ml_confidence",    # ML prediction confidence 0..1, if any
     "value_source",     # "computed:spectral-model" | "none"
     "value_is_estimate",  # ALWAYS True - never a measurement
 ]

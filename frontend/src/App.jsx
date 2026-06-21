@@ -65,7 +65,8 @@ export default function App() {
           <div className="telem">
             <div className="cell"><div className="k">Catalog objects</div><div className="v">{meta.n.toLocaleString()}</div></div>
             <div className="cell"><div className="k">Measured types</div><div className="v">{meta.measured_spec.toLocaleString()}</div></div>
-            <div className="cell"><div className="k">Benner Δv refs</div><div className="v accent">{meta.benner_dv.toLocaleString()}</div></div>
+            <div className="cell"><div className="k">ML-predicted</div><div className="v accent">{(meta.predicted_types || 0).toLocaleString()}</div></div>
+            <div className="cell"><div className="k">Benner Δv refs</div><div className="v">{meta.benner_dv.toLocaleString()}</div></div>
             <div className="cell"><div className="k">Δv envelope</div><div className="v">{meta.dv_range[0].toFixed(1)}–{meta.dv_range[1].toFixed(0)} km/s</div></div>
             <div className="cell"><div className="k">Value model</div><div className="v accent">Computed</div></div>
           </div>

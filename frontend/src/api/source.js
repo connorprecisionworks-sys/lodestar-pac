@@ -30,7 +30,9 @@ async function load() {
 
 export const source = {
   async meta() {
-    return (await load()).meta;
+    const { records, meta } = await load();
+    const predicted = records.filter((r) => r.type_source === "ml-predicted").length;
+    return { ...meta, predicted_types: predicted };
   },
 
   async asteroids({ weight = 0.5, spec = "all", dv_max, q = "", sort = "score", page = 0, page_size = 50 }) {

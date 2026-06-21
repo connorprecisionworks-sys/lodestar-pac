@@ -28,10 +28,22 @@ from backend.ranking.value import value_estimate
 
 IN_PATH = Path("data/processed/asteroids.parquet")
 OUT_PATH = Path("data/processed/asteroids_enriched.parquet")
+PRED_PATH = Path("data/models/taxonomy_predictions.parquet")
+
+
+def _load_predictions(df: pd.DataFrame) -> pd.DataFrame:
+    """Merge ML taxonomy predictions (if present) onto the store by desig_key."""
+    if PRED_PATH.exists():
+        pred = pd.read_parquet(PRED_PATH)
+        return df.merge(pred, on="desig_key", how="left")
+    df["ml_complex"] = pd.NA
+    df["ml_confidence"] = pd.NA
+    return df
 
 
 def add_value(df: pd.DataFrame) -> pd.DataFrame:
-    """Add computed value columns (vectorized via row apply over the model)."""
+    """Add computed value columns, using confident ML taxonomy where available."""
+    df = _load_predictions(df)
     records = []
     for _, row in df.iterrows():
         spec = row.get("spec_type")
@@ -42,7 +54,12 @@ def add_value(df: pd.DataFrame) -> pd.DataFrame:
         h = float(h) if pd.notna(h) else None
         alb = row.get("albedo")
         alb = float(alb) if pd.notna(alb) else None
-        records.append(value_estimate(diam, spec, h_mag=h, albedo=alb))
+        mlc = row.get("ml_complex")
+        mlc = None if pd.isna(mlc) else str(mlc)
+        mlconf = row.get("ml_confidence")
+        mlconf = None if pd.isna(mlconf) else float(mlconf)
+        records.append(value_estimate(diam, spec, h_mag=h, albedo=alb,
+                                      ml_complex=mlc, ml_confidence=mlconf))
     v = pd.DataFrame.from_records(records, index=df.index)
 
     df["value_usd"] = v["value_usd"]
@@ -51,6 +68,9 @@ def add_value(df: pd.DataFrame) -> pd.DataFrame:
     df["value_complex"] = v["complex_used"].astype("string")
     df["size_source"] = v["size_source"].astype("string")
     df["spec_is_assumed"] = v["spec_is_assumed"]
+    df["type_source"] = v["type_source"].astype("string")
+    df["ml_complex"] = df["ml_complex"].astype("string")
+    df["ml_confidence"] = pd.to_numeric(df["ml_confidence"], errors="coerce")
     has_value = df["value_usd"].notna()
     df["value_source"] = pd.array(
         ["computed:spectral-model" if x else "none" for x in has_value], dtype="string"
@@ -93,14 +113,18 @@ def report(df: pd.DataFrame) -> None:
         print("[enrich] empty store")
         return
     val = int(df["value_usd"].notna().sum())
-    valued = df["value_usd"].notna()
-    assumed = int((valued & df["spec_is_assumed"].fillna(False)).sum())
+    ts = df["type_source"]
+    measured = int(ts.eq("measured").sum())
+    predicted = int(ts.eq("ml-predicted").sum())
+    assumed = int(ts.eq("assumed").sum())
     benner = int(df["dv_source"].eq("asterank-benner").sum())
     proxy = int(df["dv_source"].eq("computed:hohmann-proxy").sum())
     print("\n[enrich] ---- enriched store summary ----")
     print(f"  rows                        : {n}")
     print(f"  with a value estimate       : {val} ({val / n:.0%})")
-    print(f"    of those, assumed type    : {assumed} (wide uncertainty band)")
+    print(f"  type: measured              : {measured}")
+    print(f"  type: ML-predicted          : {predicted} (confident albedo classifier)")
+    print(f"  type: assumed (default S)   : {assumed}")
     print(f"  delta-v from Benner table   : {benner} ({benner / n:.0%})")
     print(f"  delta-v from Hohmann proxy  : {proxy} ({proxy / n:.0%})")
     if val:

@@ -35,12 +35,14 @@ export default function RankingTable({ data, selectedId, onSelect, sort, onSort,
                 <td className="idxcol mono faint">{String(page * pageSize + i + 1).padStart(2, "0")}</td>
                 <td className="objcell">
                   <span className="oname">{r.full_name.trim()}</span>
-                  {r.spec_is_assumed
-                    ? <span className="est">est</span>
-                    : r.spec_type && <span className="subtype">{r.spec_type}</span>}
+                  {r.type_source === "measured"
+                    ? (r.spec_type && <span className="subtype">{r.spec_type}</span>)
+                    : r.type_source === "ml-predicted"
+                      ? <span className="pred">pred</span>
+                      : <span className="est">est</span>}
                 </td>
                 <td>
-                  <span className={"pill " + r.value_complex + (r.spec_is_assumed ? " dim" : "")}>{r.value_complex}</span>
+                  <span className={"pill " + r.value_complex + (r.type_source === "assumed" ? " dim" : "")}>{r.value_complex}</span>
                 </td>
                 <td className="num mono val">{fmtUSD(r.value_usd)}</td>
                 <td className="num mono">

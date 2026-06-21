@@ -26,7 +26,7 @@ FIELDS = [
     "id", "full_name", "value_complex", "spec_type", "spec_is_assumed",
     "value_usd", "value_low", "value_high", "dv_kms", "dv_source",
     "display_diameter_km", "a_au", "e", "i_deg", "om_deg", "w_deg",
-    "ma_deg", "per_days", "epoch_jd",
+    "ma_deg", "per_days", "epoch_jd", "type_source", "ml_confidence",
 ]
 
 
@@ -62,6 +62,8 @@ def build() -> None:
             _r(r["om_deg"], 2), _r(r["w_deg"], 2), _r(r["ma_deg"], 2),
             _r(r["per_days"], 1),
             _r(r["epoch_jd"], 4) if "epoch_jd" in r else None,
+            (r["type_source"] if "type_source" in r and pd.notna(r["type_source"]) else "assumed"),
+            _r(r["ml_confidence"], 2) if "ml_confidence" in r else None,
         ])
 
     payload = {"fields": FIELDS, "rows": rows, "meta": store.meta()}

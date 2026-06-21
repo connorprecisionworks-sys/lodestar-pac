@@ -54,7 +54,11 @@ _ASSUMED_ALBEDO = {"C": 0.05, "S": 0.20, "M": 0.15}
 
 # Multiplicative uncertainty factors, combined as type_factor * size_factor.
 # value_low = value / U, value_high = value * U.
-_UNC_TYPE = {True: 5.0, False: 2.5}     # keyed on spec_is_assumed
+_UNC_TYPE = {                            # keyed on type_source
+    "measured": 2.5,
+    "ml-predicted": 3.5,
+    "assumed": 5.0,
+}
 _UNC_SIZE = {                            # keyed on size_source
     "measured": 1.3,
     "h+albedo": 1.7,
@@ -102,29 +106,50 @@ def effective_diameter(
     return None, None
 
 
+def resolve_complex(
+    spec_type: str | None,
+    ml_complex: str | None = None,
+    ml_confidence: float | None = None,
+    ml_threshold: float = 0.6,
+) -> tuple[str, str]:
+    """Resolve the compositional complex and its provenance.
+
+    Priority: a measured spectral type, then a confident ML prediction, then the
+    default assumption. Returns (complex, type_source) where type_source is one of
+    "measured" / "ml-predicted" / "assumed".
+    """
+    measured = complex_of(spec_type)
+    if measured is not None:
+        return measured, "measured"
+    if ml_complex in ("C", "S", "M") and (ml_confidence or 0) >= ml_threshold:
+        return ml_complex, "ml-predicted"
+    return DEFAULT_COMPLEX, "assumed"
+
+
 def value_estimate(
     diameter_km: float | None,
     spec_type: str | None,
     h_mag: float | None = None,
     albedo: float | None = None,
+    ml_complex: str | None = None,
+    ml_confidence: float | None = None,
+    ml_threshold: float = 0.6,
 ) -> dict:
     """Estimate body value (USD) with an uncertainty band and full provenance.
 
-    Returns value_usd/value_low/value_high, the complex used, the size_source,
-    and spec_is_assumed. value_usd is None only when no size can be derived.
+    A confident ML taxonomy prediction (>= ml_threshold) is used when no measured
+    spectral type exists, at a wider uncertainty than measured but tighter than a
+    blanket assumption. Returns value + band, complex_used, size_source,
+    type_source, and spec_is_assumed (True for ml-predicted and assumed alike).
     """
-    measured_complex = complex_of(spec_type)
-    if measured_complex is not None:
-        used_complex = measured_complex
-        assumed = False
-    else:
-        used_complex = DEFAULT_COMPLEX
-        assumed = True
+    used_complex, type_source = resolve_complex(spec_type, ml_complex, ml_confidence, ml_threshold)
+    assumed = type_source != "measured"
 
     diameter, size_source = effective_diameter(diameter_km, h_mag, albedo, used_complex)
     none_result = {
         "value_usd": None, "value_low": None, "value_high": None,
-        "complex_used": used_complex, "size_source": None, "spec_is_assumed": assumed,
+        "complex_used": used_complex, "size_source": None,
+        "spec_is_assumed": assumed, "type_source": type_source,
     }
     if diameter is None:
         return none_result
@@ -134,7 +159,7 @@ def value_estimate(
         return none_result
 
     value = m * _VALUE_PER_KG[used_complex]
-    unc = _UNC_TYPE[assumed] * _UNC_SIZE[size_source]
+    unc = _UNC_TYPE[type_source] * _UNC_SIZE[size_source]
     return {
         "value_usd": value,
         "value_low": value / unc,
@@ -142,4 +167,5 @@ def value_estimate(
         "complex_used": used_complex,
         "size_source": size_source,
         "spec_is_assumed": assumed,
+        "type_source": type_source,
     }

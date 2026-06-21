@@ -13,7 +13,11 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
   return (
     <div className="panel">
       <h2 data-idx="03">{detail.full_name.trim()}</h2>
-      <Row k="Complex" v={detail.value_complex + (detail.spec_is_assumed ? " (assumed)" : " (measured)")} />
+      <Row k="Complex" v={`${detail.value_complex} (${
+        detail.type_source === "measured" ? "measured"
+          : detail.type_source === "ml-predicted"
+            ? `ML-predicted, ${Math.round((detail.ml_confidence || 0) * 100)}% conf`
+            : "assumed"})`} />
       <Row k="Est. value" v={fmtUSD(detail.value_usd)} />
       <Row k="Value range" v={`${fmtUSD(detail.value_low)} - ${fmtUSD(detail.value_high)}`} />
       <Row k="Delta-v" v={`${detail.dv_kms?.toFixed(2)} km/s (${detail.dv_source === "asterank-benner" ? "Benner" : "proxy"})`} />

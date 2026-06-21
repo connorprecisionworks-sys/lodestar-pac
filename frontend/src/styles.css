@@ -100,6 +100,8 @@ tbody tr.sel{background:rgba(199,245,59,.06);border-left:2px solid var(--lime)}
 .objcell .subtype{font-family:var(--mono);font-size:10px;color:var(--faint);margin-left:8px;letter-spacing:.04em}
 .objcell .est{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--s);
   margin-left:8px;border:1px solid rgba(214,169,63,.3);padding:0 4px;border-radius:2px}
+.objcell .pred{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--lime);
+  margin-left:8px;border:1px solid rgba(199,245,59,.35);padding:0 4px;border-radius:2px}
 td.val{color:var(--ink)}
 td.score{color:var(--lime)}
 .src{font-family:var(--mono);font-size:9px;color:var(--lime-dim);margin-left:6px;text-transform:uppercase;letter-spacing:.08em}
