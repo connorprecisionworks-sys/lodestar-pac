@@ -1,4 +1,5 @@
 import { fmtUSD, jdToDate } from "../lib/format.js";
+import { missionProfile } from "../lib/mission.js";
 import PorkchopPlot from "./PorkchopPlot.jsx";
 import AsteroidSpecimen from "./AsteroidSpecimen.jsx";
 import MaterialBreakdown from "./MaterialBreakdown.jsx";
@@ -35,6 +36,19 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
           <MaterialBreakdown complex={detail.value_complex} diameterKm={detail.display_diameter_km} />
         </>
       )}
+
+      {(() => {
+        const mp = missionProfile(detail.dv_kms);
+        if (!mp) return null;
+        return (
+          <>
+            <h3>Mission feasibility</h3>
+            <Row k="Accessibility" v={<span style={{ color: mp.feasibility.color }}>{mp.feasibility.label} · {detail.dv_kms.toFixed(1)} km/s</span>} />
+            <Row k="Propellant, chemical" v={`${Math.round(mp.chemical * 100)}% of ship mass`} />
+            <Row k="Propellant, electric" v={`${Math.round(mp.electric * 100)}% of ship mass`} />
+          </>
+        );
+      })()}
 
       <button className="primary" disabled={busy} onClick={() => onCompute(detail.id)}>
         {busy ? "Computing launch windows..." : "Compute trajectory"}
