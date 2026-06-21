@@ -1,0 +1,32 @@
+# Data store (pulled / derived - never committed)
+data/raw/
+data/processed/
+data/models/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/models/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Generated preview dashboard (rebuild with frontend.preview.build_preview)
+frontend/preview/lodestar-preview.html
+
+# Env / secrets
+.env
+.env.local
+
+# OS
+.DS_Store

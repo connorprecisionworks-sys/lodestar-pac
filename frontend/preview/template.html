@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lodestar PAC - Preview</title>
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#121826; --panel2:#1a2233; --line:#232c3f;
+    --ink:#e7ecf5; --muted:#8b97ad; --faint:#5d6883;
+    --accent:#6f9cff; --accent2:#9b7cff;
+    --c:#5aa9e6; --s:#d9a441; --m:#e8634f; --good:#3fae6a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:24px}
+  header h1{margin:0;font-size:24px;letter-spacing:-.02em}
+  header .tag{color:var(--muted);margin-top:4px;font-size:13px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+  .grid{display:grid;gap:16px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h2{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);font-weight:600}
+  /* layers */
+  .layers{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:880px){.layers{grid-template-columns:1fr 1fr}}
+  .layer{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .layer .n{font-size:11px;color:var(--faint);letter-spacing:.1em}
+  .layer .t{font-weight:600;margin:2px 0 6px}
+  .layer .d{font-size:12px;color:var(--muted)}
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:999px;margin-top:8px;font-weight:600;letter-spacing:.04em}
+  .b-done{background:rgba(63,174,106,.16);color:#7fe0a4;border:1px solid rgba(63,174,106,.35)}
+  .b-part{background:rgba(217,164,65,.16);color:#f0c878;border:1px solid rgba(217,164,65,.35)}
+  .b-next{background:rgba(111,156,255,.14);color:#a8c2ff;border:1px solid rgba(111,156,255,.32)}
+  /* controls */
+  .controls{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:18px;align-items:end}
+  @media(max-width:880px){.controls{grid-template-columns:1fr 1fr}}
+  label.ctl{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .slabels{display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:4px}
+  select,input[type=text]{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:8px;padding:8px 10px;font-size:13px}
+  .stat{display:flex;gap:22px;flex-wrap:wrap;margin-top:4px}
+  .stat .v{font-size:20px;font-weight:700}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  /* layout */
+  .main{display:grid;grid-template-columns:1fr 420px;gap:16px;margin-top:16px}
+  @media(max-width:980px){.main{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);cursor:pointer;user-select:none}
+  th.num,td.num{text-align:right}
+  tbody tr:hover{background:rgba(111,156,255,.06)}
+  .pill{font-size:10px;padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+  .pill.C{color:#9fd0f5;border-color:rgba(90,169,230,.4)}
+  .pill.S{color:#f0cd8a;border-color:rgba(217,164,65,.4)}
+  .pill.M{color:#f3a397;border-color:rgba(232,99,79,.45)}
+  .tagk{font-size:10px;color:var(--faint)}
+  .tag-assumed{color:#caa24a}
+  .tag-benner{color:#7fe0a4}
+  .band{font-size:11px;color:var(--faint)}
+  canvas{width:100%;height:auto;background:var(--panel2);border-radius:8px;border:1px solid var(--line)}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .pager{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);border-radius:7px;padding:6px 12px;cursor:pointer}
+  .btn:disabled{opacity:.4;cursor:default}
+  .note{font-size:12px;color:var(--muted)}
+  .foot{margin-top:18px;font-size:12px;color:var(--faint)}
+  .hl{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lodestar PAC <span style="color:var(--faint);font-weight:400;font-size:16px">/ preview</span></h1>
+    <div class="tag">Predictive Asteroid Characterization. Ranking near-Earth asteroids by estimated value against accessibility. Every number is an estimate with uncertainty, never a measurement.</div>
+  </header>
+
+  <div class="panel" style="margin-top:18px">
+    <h2>What's built so far</h2>
+    <div class="layers">
+      <div class="layer"><div class="n">LAYER 1</div><div class="t">Data ingestion</div><div class="d">JPL SBDB orbits + physical + measured taxonomy, joined with the Asterank baseline.</div><span class="badge b-done">BUILT</span></div>
+      <div class="layer"><div class="n">LAYER 2</div><div class="t">ML characterization</div><div class="d">Predict taxonomy + composition for the unmeasured majority. The differentiator.</div><span class="badge b-next">PHASE 4</span></div>
+      <div class="layer"><div class="n">LAYER 3</div><div class="t">Astrodynamics</div><div class="d">Screening-grade delta-v from orbital elements. Real launch windows + porkchop next.</div><span class="badge b-part">PROXY BUILT</span></div>
+      <div class="layer"><div class="n">LAYER 4</div><div class="t">Ranking engine</div><div class="d">Composite of value x accessibility with user weights. Value model built here.</div><span class="badge b-part">CORE BUILT</span></div>
+      <div class="layer"><div class="n">LAYER 5</div><div class="t">Interface</div><div class="d">This page is a static preview. React + FastAPI is the Phase 1 finish line.</div><span class="badge b-part">PREVIEW</span></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
+    <h2>Controls</h2>
+    <div class="controls">
+      <div>
+        <label class="ctl">Priority: accessibility &harr; value</label>
+        <input id="w" type="range" min="0" max="100" value="50" />
+        <div class="slabels"><span>easiest to reach</span><span id="wlab">balanced</span><span>most valuable</span></div>
+      </div>
+      <div>
+        <label class="ctl">Spectral filter</label>
+        <select id="spec">
+          <option value="all">All objects</option>
+          <option value="measured">Measured type only</option>
+          <option value="M">M-type (metals)</option>
+          <option value="S">S-type (stony)</option>
+          <option value="C">C-type (volatiles)</option>
+        </select>
+      </div>
+      <div>
+        <label class="ctl">Max delta-v: <span id="dvlab" class="mono"></span></label>
+        <input id="dv" type="range" min="3" max="40" value="40" step="0.5" />
+      </div>
+      <div>
+        <label class="ctl">Search name / designation</label>
+        <input id="q" type="text" placeholder="e.g. Apophis, Eros, 2008" />
+      </div>
+    </div>
+    <div class="stat" style="margin-top:14px">
+      <div><div class="v" id="st-n">-</div><div class="k">objects shown</div></div>
+      <div><div class="v" id="st-top" class="mono">-</div><div class="k">top target</div></div>
+      <div><div class="v mono" id="st-dv">-</div><div class="k">its delta-v</div></div>
+      <div><div class="v mono" id="st-val">-</div><div class="k">its est. value</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel">
+      <h2>Ranked shortlist <span class="note" id="ranknote"></span></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>#</th>
+            <th data-k="name">Object</th>
+            <th data-k="complex">Type</th>
+            <th class="num" data-k="value">Est. value (USD)</th>
+            <th class="num" data-k="dv">&Delta;v km/s</th>
+            <th class="num" data-k="size">Size km</th>
+            <th class="num" data-k="score">Score</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="btn" id="prev">&larr; Prev</button>
+        <span id="pageinfo"></span>
+        <button class="btn" id="next">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Value vs accessibility</h2>
+      <canvas id="scatter" width="780" height="560"></canvas>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--m)"></span>M metallic</span>
+        <span><span class="dot" style="background:var(--s)"></span>S stony</span>
+        <span><span class="dot" style="background:var(--c)"></span>C volatile</span>
+        <span><span class="dot" style="background:#fff"></span>current top 50</span>
+      </div>
+      <div class="note" style="margin-top:8px">x = delta-v (left is easier). y = log<sub>10</sub> estimated value. Each point is one near-Earth asteroid.</div>
+    </div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+const DATA = __LODESTAR_DATA__;
+// columns: [name, complex, spec, assumed(0/1), value, vlow, vhigh, dv, benner(0/1), size, a, e, i]
+const rows = DATA.rows.map(r => ({
+  name:r[0], complex:r[1], spec:r[2], assumed:!!r[3],
+  value:r[4], vlow:r[5], vhigh:r[6], dv:r[7], benner:!!r[8],
+  size:r[9], a:r[10], e:r[11], i:r[12]
+}));
+const META = DATA.meta;
+
+// precompute log-value range for normalization
+const lv = rows.filter(r=>r.value>0).map(r=>Math.log10(r.value));
+const LVMIN=Math.min(...lv), LVMAX=Math.max(...lv);
+const dvs = rows.filter(r=>r.dv!=null).map(r=>r.dv);
+const DVMIN=Math.min(...dvs), DVMAX=Math.max(...dvs);
+
+const el=id=>document.getElementById(id);
+let page=0, sortK='score', sortDir=-1, view=[];
+
+function fmtUSD(v){
+  if(v==null) return '-';
+  if(v>=1e15) return '$'+(v/1e15).toFixed(1)+'Q';
+  if(v>=1e12) return '$'+(v/1e12).toFixed(1)+'T';
+  if(v>=1e9)  return '$'+(v/1e9).toFixed(1)+'B';
+  if(v>=1e6)  return '$'+(v/1e6).toFixed(1)+'M';
+  return '$'+v.toFixed(0);
+}
+function valueNorm(v){ if(!(v>0)) return 0; return (Math.log10(v)-LVMIN)/(LVMAX-LVMIN); }
+function accessNorm(dv){ if(dv==null) return 0; return 1-(dv-DVMIN)/(DVMAX-DVMIN); }
+function score(r,w){ // weighted geometric mean: punishes a near-zero in either axis
+  const vn=Math.max(valueNorm(r.value),1e-4), an=Math.max(accessNorm(r.dv),1e-4);
+  return Math.pow(vn,w)*Math.pow(an,1-w);
+}
+
+function compute(){
+  const w=+el('w').value/100;
+  const spec=el('spec').value, dvmax=+el('dv').value, q=el('q').value.trim().toLowerCase();
+  el('wlab').textContent = w<0.34?'favor access':w>0.66?'favor value':'balanced';
+  el('dvlab').textContent = dvmax>=40?'any':dvmax.toFixed(1);
+  view = rows.filter(r=>{
+    if(r.dv==null||r.value==null) return false;
+    if(r.dv>dvmax) return false;
+    if(spec==='measured' && r.assumed) return false;
+    if((spec==='M'||spec==='S'||spec==='C') && r.complex!==spec) return false;
+    if(q && !r.name.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  view.forEach(r=>r._s=score(r,w));
+  sortView();
+  page=0;
+  render(); drawScatter(w);
+}
+function sortView(){
+  const k=sortK;
+  view.sort((a,b)=>{
+    let av,bv;
+    if(k==='name'){av=a.name;bv=b.name;return sortDir*(av<bv?-1:av>bv?1:0);}
+    if(k==='complex'){av=a.complex;bv=b.complex;return sortDir*(av<bv?-1:av>bv?1:0);}
+    av = k==='score'?a._s : a[k]; bv = k==='score'?b._s : b[k];
+    return sortDir*((av||0)-(bv||0));
+  });
+}
+const PAGE=50;
+function render(){
+  const tb=el('rows'); tb.innerHTML='';
+  const start=page*PAGE, slice=view.slice(start,start+PAGE);
+  slice.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const specTxt = r.spec?r.spec:'<span class="tagk">unmeasured</span>';
+    const assumedTag = r.assumed?' <span class="tagk tag-assumed">assumed</span>':'';
+    const dvTag = r.benner?'<span class="tagk tag-benner"> benner</span>':'<span class="tagk"> proxy</span>';
+    tr.innerHTML =
+      '<td class="mono" style="color:var(--faint)">'+(start+i+1)+'</td>'+
+      '<td>'+r.name+'<br><span class="tagk">'+specTxt+assumedTag+'</span></td>'+
+      '<td><span class="pill '+r.complex+'">'+r.complex+'</span></td>'+
+      '<td class="num mono">'+fmtUSD(r.value)+'<br><span class="band">'+fmtUSD(r.vlow)+' - '+fmtUSD(r.vhigh)+'</span></td>'+
+      '<td class="num mono">'+r.dv.toFixed(2)+dvTag+'</td>'+
+      '<td class="num mono">'+(r.size?r.size.toFixed(2):'-')+'</td>'+
+      '<td class="num mono">'+r._s.toFixed(3)+'</td>';
+    tb.appendChild(tr);
+  });
+  el('st-n').textContent = view.length.toLocaleString();
+  el('ranknote').textContent = view.length? '('+view.length.toLocaleString()+' match the filters)':'';
+  const top=view[0];
+  el('st-top').textContent = top?top.name.replace(/\s*\(.*\)/,''):'-';
+  el('st-dv').textContent = top?top.dv.toFixed(2)+' km/s':'-';
+  el('st-val').textContent = top?fmtUSD(top.value):'-';
+  const pages=Math.max(1,Math.ceil(view.length/PAGE));
+  el('pageinfo').textContent='Page '+(page+1)+' of '+pages;
+  el('prev').disabled=page<=0; el('next').disabled=page>=pages-1;
+}
+function drawScatter(w){
+  const cv=el('scatter'), x=cv.getContext('2d');
+  const W=cv.width,H=cv.height,pad=44;
+  x.clearRect(0,0,W,H);
+  const xmin=3, xmax=Math.min(20,DVMAX), ymin=LVMIN, ymax=LVMAX;
+  const px=dv=>pad+(Math.min(dv,xmax)-xmin)/(xmax-xmin)*(W-pad*1.4);
+  const py=v=>H-pad-(Math.log10(v)-ymin)/(ymax-ymin)*(H-pad*1.7);
+  // axes
+  x.strokeStyle='#2a3349'; x.lineWidth=1;
+  x.beginPath(); x.moveTo(pad,H-pad); x.lineTo(W-10,H-pad); x.moveTo(pad,H-pad); x.lineTo(pad,18); x.stroke();
+  x.fillStyle='#6c7790'; x.font='11px monospace';
+  for(let d=4;d<=xmax;d+=4){x.fillText(d+'',px(d)-6,H-pad+16);}
+  x.fillText('delta-v (km/s)',W/2-40,H-10);
+  x.save();x.translate(14,H/2+40);x.rotate(-Math.PI/2);x.fillText('log10 value (USD)',0,0);x.restore();
+  const col={C:'#5aa9e6',S:'#d9a441',M:'#e8634f'};
+  const top=new Set(view.slice(0,50).map(r=>r.name));
+  // base points
+  for(const r of view){
+    if(r.value<=0) continue;
+    x.fillStyle=col[r.complex]||'#888';
+    x.globalAlpha=top.has(r.name)?0:0.28;
+    if(x.globalAlpha===0) continue;
+    x.beginPath();x.arc(px(r.dv),py(r.value),2,0,7);x.fill();
+  }
+  // highlight top 50
+  for(const r of view.slice(0,50)){
+    if(r.value<=0) continue;
+    x.globalAlpha=1; x.fillStyle='#fff';
+    x.beginPath();x.arc(px(r.dv),py(r.value),3.2,0,7);x.fill();
+    x.strokeStyle=col[r.complex]||'#888';x.lineWidth=1.5;x.stroke();
+  }
+  x.globalAlpha=1;
+}
+
+// wire up
+['w','dv','spec','q'].forEach(id=>el(id).addEventListener('input',compute));
+document.querySelectorAll('th[data-k]').forEach(th=>th.addEventListener('click',()=>{
+  const k=th.dataset.k;
+  if(sortK===k) sortDir*=-1; else {sortK=k; sortDir=(k==='name'||k==='complex')?1:-1;}
+  sortView(); page=0; render();
+}));
+el('prev').onclick=()=>{if(page>0){page--;render();}};
+el('next').onclick=()=>{page++;render();};
+el('foot').innerHTML='<span class="hl">'+META.n.toLocaleString()+'</span> near-Earth asteroids from JPL SBDB. '+
+  '<span class="hl">'+META.measured.toLocaleString()+'</span> have a measured spectral type; the rest assume a type (wide uncertainty). '+
+  'Delta-v: <span class="hl">'+META.benner.toLocaleString()+'</span> from the Benner table, the rest from a screening Hohmann proxy (~2-25% conservative). '+
+  'Built '+META.built+'. All figures are estimates with uncertainty bands, not measurements or appraisals.';
+compute();
+</script>
+</body>
+</html>
