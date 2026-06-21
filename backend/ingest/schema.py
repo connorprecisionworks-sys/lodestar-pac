@@ -72,6 +72,9 @@ VALUE_COLUMNS = [
     "value_usd",        # our computed value estimate (order-of-magnitude)
     "value_low",        # lower bound of the uncertainty band
     "value_high",       # upper bound of the uncertainty band
+    "water_tons",       # recoverable water estimate (tonnes)
+    "metal_tons",       # recoverable iron-nickel estimate (tonnes)
+    "pgm_kg",           # recoverable platinum-group metals estimate (kg)
     "value_complex",    # compositional complex used (C/S/M)
     "size_source",      # "measured" | "h+albedo" | "h+assumed-albedo"
     "spec_is_assumed",  # True when taxonomy was assumed (or ML-predicted), not measured

@@ -65,6 +65,9 @@ def add_value(df: pd.DataFrame) -> pd.DataFrame:
     df["value_usd"] = v["value_usd"]
     df["value_low"] = v["value_low"]
     df["value_high"] = v["value_high"]
+    df["water_tons"] = v["water_tons"]
+    df["metal_tons"] = v["metal_tons"]
+    df["pgm_kg"] = v["pgm_kg"]
     df["value_complex"] = v["complex_used"].astype("string")
     df["size_source"] = v["size_source"].astype("string")
     df["spec_is_assumed"] = v["spec_is_assumed"]

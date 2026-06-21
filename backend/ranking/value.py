@@ -39,11 +39,24 @@ _COMPLEX_OF = {
 # Bulk density by complex (kg/m^3).
 _DENSITY = {"C": 1300.0, "S": 2700.0, "M": 5300.0}
 
-# Coarse value-per-kg (USD). Order-of-magnitude, rationale:
-#   M: iron-nickel bulk plus platinum-group metals at trace concentration.
-#   S: silicates with minor recoverable metal / PGM.
-#   C: water and volatiles, valued for in-space propellant, not Earth markets.
-_VALUE_PER_KG = {"C": 100.0, "S": 200.0, "M": 5000.0}
+# Resource model: recoverable mass fraction of each resource by complex, and a
+# coarse in-space value per kg of each resource. Order-of-magnitude / illustrative
+#   - water: hydrated minerals + volatiles, valued as in-space propellant feedstock
+#   - metal: iron-nickel
+#   - pgm: platinum-group metals (trace, but high value)
+_RES_FRAC = {
+    "C": {"water": 0.10, "metal": 0.02, "pgm": 0.0},
+    "S": {"water": 0.001, "metal": 0.15, "pgm": 1.0e-6},
+    "M": {"water": 0.0, "metal": 0.88, "pgm": 3.0e-5},
+}
+_RES_USD_PER_KG = {"water": 5.0, "metal": 2.0, "pgm": 35000.0}
+
+# Effective value-per-kg of bulk material, derived from the resource model so the
+# headline value and the resource breakdown always agree.
+_VALUE_PER_KG = {
+    c: sum(_RES_FRAC[c][r] * _RES_USD_PER_KG[r] for r in _RES_USD_PER_KG)
+    for c in _RES_FRAC
+}
 
 # Default complex for objects with no measured taxonomy (most common NEO type).
 DEFAULT_COMPLEX = "S"
@@ -80,6 +93,16 @@ def mass_kg(diameter_km: float | None, complex_: str) -> float | None:
     radius_m = diameter_km * 1000.0 / 2.0
     volume_m3 = (4.0 / 3.0) * math.pi * radius_m**3
     return volume_m3 * _DENSITY[complex_]
+
+
+def resources(mass: float, complex_: str) -> dict:
+    """Recoverable resource estimate for a given mass (kg) and complex."""
+    f = _RES_FRAC[complex_]
+    return {
+        "water_tons": mass * f["water"] / 1000.0,
+        "metal_tons": mass * f["metal"] / 1000.0,
+        "pgm_kg": mass * f["pgm"],
+    }
 
 
 def effective_diameter(
@@ -150,6 +173,7 @@ def value_estimate(
         "value_usd": None, "value_low": None, "value_high": None,
         "complex_used": used_complex, "size_source": None,
         "spec_is_assumed": assumed, "type_source": type_source,
+        "water_tons": None, "metal_tons": None, "pgm_kg": None,
     }
     if diameter is None:
         return none_result
@@ -160,6 +184,7 @@ def value_estimate(
 
     value = m * _VALUE_PER_KG[used_complex]
     unc = _UNC_TYPE[type_source] * _UNC_SIZE[size_source]
+    res = resources(m, used_complex)
     return {
         "value_usd": value,
         "value_low": value / unc,
@@ -168,4 +193,5 @@ def value_estimate(
         "size_source": size_source,
         "spec_is_assumed": assumed,
         "type_source": type_source,
+        **res,
     }

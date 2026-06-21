@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from backend.ranking.value import complex_of, value_estimate
+from backend.ranking.value import complex_of, mass_kg, resources, value_estimate
 
 
 def test_complex_mapping():
@@ -15,12 +15,24 @@ def test_complex_mapping():
     assert complex_of("???") is None
 
 
-def test_metal_beats_stony_beats_carbon_same_size():
+def test_metal_is_most_valuable_same_size():
     d = 1.0  # km
     m = value_estimate(d, "M")["value_usd"]
     s = value_estimate(d, "S")["value_usd"]
     c = value_estimate(d, "C")["value_usd"]
-    assert m > s > c
+    # metallic dominates (dense + platinum-group); C and S are far lower
+    assert m > s and m > c
+
+
+def test_resources_match_composition():
+    mass = mass_kg(1.0, "M")  # kg
+    r_m = resources(mass, "M")
+    r_c = resources(mass_kg(1.0, "C"), "C")
+    # metallic has platinum-group + iron, ~no water; carbon has water, no PGM
+    assert r_m["pgm_kg"] > 0 and r_m["metal_tons"] > 0 and r_m["water_tons"] == 0
+    assert r_c["water_tons"] > 0 and r_c["pgm_kg"] == 0
+    # resource tonnage scales with mass
+    assert resources(2 * mass, "M")["metal_tons"] == 2 * r_m["metal_tons"]
 
 
 def test_value_scales_with_volume():

@@ -24,7 +24,8 @@ OUT = Path("frontend/public/data/asteroids.json")
 # Column order embedded in the JSON (kept compact as array-of-arrays).
 FIELDS = [
     "id", "full_name", "value_complex", "spec_type", "spec_is_assumed",
-    "value_usd", "value_low", "value_high", "dv_kms", "dv_source",
+    "value_usd", "value_low", "value_high", "water_tons", "metal_tons", "pgm_kg",
+    "dv_kms", "dv_source",
     "display_diameter_km", "a_au", "e", "i_deg", "om_deg", "w_deg",
     "ma_deg", "per_days", "epoch_jd", "type_source", "ml_confidence",
 ]
@@ -55,6 +56,7 @@ def build() -> None:
             str(r["spec_type"]) if pd.notna(r["spec_type"]) else "",
             1 if bool(r["spec_is_assumed"]) else 0,
             _sig(r["value_usd"]), _sig(r["value_low"]), _sig(r["value_high"]),
+            _sig(r["water_tons"]), _sig(r["metal_tons"]), _sig(r["pgm_kg"]),
             _r(r["dv_kms"], 3),
             "benner" if r["dv_source"] == "asterank-benner" else "proxy",
             _sig(r["display_diameter_km"], 3),

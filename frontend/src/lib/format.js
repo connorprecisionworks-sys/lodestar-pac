@@ -16,6 +16,17 @@ export function fmtUSD(v) {
   return "$" + Math.round(v);
 }
 
+export function fmtQty(v) {
+  if (v == null || Number.isNaN(v)) return "—";
+  for (const [s, m] of [["T", 1e12], ["B", 1e9], ["M", 1e6], ["K", 1e3]]) {
+    if (Math.abs(v) >= m) {
+      const x = v / m;
+      return (x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x.toFixed(2)) + s;
+    }
+  }
+  return Math.round(v).toString();
+}
+
 export function fmtNum(v, dp = 2) {
   if (v == null || Number.isNaN(v)) return "—";
   return v.toFixed(dp);
