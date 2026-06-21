@@ -99,6 +99,22 @@ uv run pytest
 uv run ruff check backend/
 ```
 
+## Deploy to Vercel (static frontend)
+
+The frontend ships with the data baked in (`frontend/public/data/asteroids.json`) and does ranking + the screening trajectory client-side, so it deploys as a pure static site with no backend. The FastAPI backend stays in the repo for local use and Phase 2.
+
+Push to GitHub (first time), then import on Vercel with Root Directory set to `frontend`. `frontend/vercel.json` already pins the Vite framework, build command, and SPA rewrites, so every push to `main` auto-deploys.
+
+After re-running the data pipeline, refresh the deployed dataset:
+
+```
+uv run python -m backend.export_static
+```
+
+then commit and push the updated `frontend/public/data/asteroids.json`.
+
+To point the app at the live FastAPI backend instead of the static file, swap the import in `frontend/src/App.jsx` from `./api/source.js` to `./api/client.js`.
+
 ## Layout
 
 ```
