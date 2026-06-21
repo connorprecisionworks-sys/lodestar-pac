@@ -22,10 +22,10 @@ const MODEL_MAP = [
 // Pool of real shapes used for objects without their own model. Each asteroid
 // deterministically picks one by id, so the catalogue shows varied real rocks.
 const GENERIC_POOL = [
-  "/models/asteroid_hd.glb", // textured realistic rock
-  "/models/golevka.glb",     // angular
-  "/models/mithra.glb",      // lumpy
-  "/models/toutatis.glb",    // elongated bilobed
+  "/models/asteroid_hd.glb",  // textured realistic rock
+  "/models/asteroid_hd2.glb", // textured realistic rock (variant)
+  "/models/toutatis.glb",     // real shape, elongated bilobed
+  "/models/golevka.glb",      // real shape, angular
 ];
 
 function modelFor(detail) {
