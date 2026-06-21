@@ -13,6 +13,11 @@ const MODEL_MAP = [
   [/vesta/i, "/models/vesta.glb"],
   [/ida/i, "/models/ida.glb"],
   [/gaspra/i, "/models/gaspra.glb"],
+  [/toutatis/i, "/models/toutatis.glb"],
+  [/geographos/i, "/models/geographos.glb"],
+  [/golevka/i, "/models/golevka.glb"],
+  [/mithra/i, "/models/mithra.glb"],
+  [/kleopatra/i, "/models/kleopatra.glb"],
 ];
 const GENERIC = "/models/asteroid.glb";
 
