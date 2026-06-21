@@ -19,11 +19,18 @@ const MODEL_MAP = [
   [/mithra/i, "/models/mithra.glb"],
   [/kleopatra/i, "/models/kleopatra.glb"],
 ];
-const GENERIC = "/models/asteroid.glb";
+// Pool of real shapes used for objects without their own model. Each asteroid
+// deterministically picks one by id, so the catalogue shows varied real rocks.
+const GENERIC_POOL = [
+  "/models/asteroid.glb",   // Bennu (rounded)
+  "/models/golevka.glb",    // angular
+  "/models/mithra.glb",     // lumpy
+  "/models/toutatis.glb",   // elongated bilobed
+];
 
-function modelFor(name) {
-  for (const [re, url] of MODEL_MAP) if (re.test(name)) return url;
-  return GENERIC;
+function modelFor(detail) {
+  for (const [re, url] of MODEL_MAP) if (re.test(detail.full_name)) return url;
+  return GENERIC_POOL[Math.abs(detail.id || 0) % GENERIC_POOL.length];
 }
 
 export default function AsteroidSpecimen({ detail }) {
@@ -92,7 +99,7 @@ export default function AsteroidSpecimen({ detail }) {
 
     const loader = new GLTFLoader();
     loader.load(
-      modelFor(detail.full_name),
+      modelFor(detail),
       (gltf) => {
         const obj = gltf.scene;
         // center + scale to a consistent size
