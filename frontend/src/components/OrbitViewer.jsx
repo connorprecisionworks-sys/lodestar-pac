@@ -131,6 +131,20 @@ export default function OrbitViewer({ detail, trajectory }) {
     if (R.transferLine) { R.scene.remove(R.transferLine); R.transferLine = null; }
     if (!trajectory || !R.asteroidEl) return;
 
+    if (trajectory.transferPath) {
+      // real computed Lambert transfer arc (solid white)
+      const p = trajectory.transferPath;
+      const flat = new Float32Array(p.length * 3);
+      p.forEach((pt, i) => { flat[i * 3] = pt[0] * SCALE; flat[i * 3 + 1] = pt[1] * SCALE; flat[i * 3 + 2] = pt[2] * SCALE; });
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(flat, 3));
+      const line = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xf0f4ff }));
+      R.transferLine = line;
+      R.scene.add(line);
+      return;
+    }
+
+    // schematic fallback (no epoch data): dashed bezier
     const ep = positionAtMeanAnomaly(EARTH, EARTH.ma_deg + R.t);
     const ap = positionAtMeanAnomaly(R.asteroidEl, (R.asteroidEl.ma_deg || 0) + R.t);
     const pts = transferArc(ep, ap);
@@ -154,7 +168,7 @@ export default function OrbitViewer({ detail, trajectory }) {
         <span><i style={{ background: "#ffcf5e" }} />Sun</span>
         <span><i style={{ background: "#dfe3e0" }} />Earth</span>
         <span><i style={{ background: "#c7f53b" }} />Target</span>
-        {trajectory && <span><i style={{ background: "#c7f53b" }} />Transfer (schematic)</span>}
+        {trajectory && <span><i style={{ background: trajectory.transferPath ? "#f0f4ff" : "#c7f53b" }} />{trajectory.transferPath ? "Transfer (computed)" : "Transfer (schematic)"}</span>}
       </div>
     </div>
   );

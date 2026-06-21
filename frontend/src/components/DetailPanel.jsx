@@ -1,4 +1,5 @@
-import { fmtUSD } from "../lib/format.js";
+import { fmtUSD, jdToDate } from "../lib/format.js";
+import PorkchopPlot from "./PorkchopPlot.jsx";
 
 function Row({ k, v }) {
   return <div className="kv"><span>{k}</span><span className="mono">{v}</span></div>;
@@ -20,10 +21,27 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
       <Row k="Orbit a / e / i" v={`${detail.a_au} au / ${detail.e} / ${detail.i_deg}°`} />
 
       <button className="primary" disabled={busy} onClick={() => onCompute(detail.id)}>
-        {busy ? "Computing..." : "Compute trajectory"}
+        {busy ? "Computing launch windows..." : "Compute trajectory"}
       </button>
 
-      {trajectory && (
+      {trajectory?.mode === "porkchop" && trajectory.optimal && (
+        <div className="traj">
+          <h3>Optimal launch window</h3>
+          <Row k="Depart" v={jdToDate(trajectory.startJd + trajectory.optimal.depOffsetDays)} />
+          <Row k="Flight time" v={`${trajectory.optimal.tofDays} days`} />
+          <Row k="Departure burn" v={`${trajectory.optimal.dvLaunchKms} km/s`} />
+          <Row k="Arrival / match" v={`${trajectory.optimal.dvArriveKms} km/s`} />
+          <Row k="Total Δv" v={`${trajectory.optimal.dvTotalKms} km/s`} />
+          <PorkchopPlot data={trajectory} />
+          <p className="note small">{trajectory.phase2_note}</p>
+        </div>
+      )}
+
+      {trajectory?.mode === "porkchop" && !trajectory.optimal && (
+        <p className="note small">No feasible transfer found within the search window.</p>
+      )}
+
+      {trajectory?.mode === "screening" && (
         <div className="traj">
           <h3>Screening transfer</h3>
           <Row k="Headline Δv" v={`${trajectory.dv_headline_kms?.toFixed(2)} km/s`} />

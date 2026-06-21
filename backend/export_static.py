@@ -26,7 +26,7 @@ FIELDS = [
     "id", "full_name", "value_complex", "spec_type", "spec_is_assumed",
     "value_usd", "value_low", "value_high", "dv_kms", "dv_source",
     "display_diameter_km", "a_au", "e", "i_deg", "om_deg", "w_deg",
-    "ma_deg", "per_days",
+    "ma_deg", "per_days", "epoch_jd",
 ]
 
 
@@ -61,6 +61,7 @@ def build() -> None:
             _r(r["a_au"], 4), _r(r["e"], 4), _r(r["i_deg"], 3),
             _r(r["om_deg"], 2), _r(r["w_deg"], 2), _r(r["ma_deg"], 2),
             _r(r["per_days"], 1),
+            _r(r["epoch_jd"], 4) if "epoch_jd" in r else None,
         ])
 
     payload = {"fields": FIELDS, "rows": rows, "meta": store.meta()}

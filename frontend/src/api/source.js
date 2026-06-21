@@ -4,6 +4,7 @@
 // app deploy to Vercel with no backend. Swap to ./client.js for a live API.
 
 import { accessNorm, composite, rendezvousBreakdown, valueNorm } from "../lib/compute.js";
+import { porkchop, todayJd, transferPath } from "../lib/astro.js";
 
 let _cache = null;
 
@@ -68,15 +69,30 @@ export const source = {
     const { byId } = await load();
     const r = byId.get(id);
     if (!r) throw new Error("not found");
-    const bd = rendezvousBreakdown(r.a_au, r.e, r.i_deg);
+
+    const hasEpoch = r.epoch_jd != null && r.a_au != null && r.ma_deg != null && r.i_deg != null;
+    if (hasEpoch) {
+      const el = { a: r.a_au, e: r.e, i: r.i_deg, om: r.om_deg, w: r.w_deg, ma: r.ma_deg, epoch: r.epoch_jd };
+      const start = todayJd();
+      const pc = porkchop(el, start);
+      const path = pc.optimal
+        ? transferPath(el, start + pc.optimal.depOffsetDays, pc.optimal.tofDays)
+        : null;
+      return {
+        id, mode: "porkchop", full_name: r.full_name,
+        dv_headline_kms: r.dv_kms, dv_source: r.dv_source,
+        startJd: start, depOffsets: pc.depOffsets, tofs: pc.tofs, grid: pc.grid,
+        optimal: pc.optimal, transferPath: path,
+        phase2_note: "Real two-body Lambert porkchop. Horizons-precision ephemerides are a later upgrade.",
+      };
+    }
+
     return {
-      id,
-      full_name: r.full_name,
-      dv_headline_kms: r.dv_kms,
-      dv_source: r.dv_source,
-      breakdown: bd,
-      phase2_note: "Schematic transfer only. Real launch windows (porkchop) and "
-        + "optimized transfer arcs arrive in Phase 2.",
+      id, mode: "screening", full_name: r.full_name,
+      dv_headline_kms: r.dv_kms, dv_source: r.dv_source,
+      breakdown: rendezvousBreakdown(r.a_au, r.e, r.i_deg),
+      phase2_note: "Schematic transfer. Re-run the data pipeline to capture orbital "
+        + "epochs and unlock real launch-window porkchops.",
     };
   },
 };

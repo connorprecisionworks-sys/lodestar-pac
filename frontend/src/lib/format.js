@@ -20,3 +20,8 @@ export function fmtNum(v, dp = 2) {
   if (v == null || Number.isNaN(v)) return "—";
   return v.toFixed(dp);
 }
+
+export function jdToDate(jd) {
+  const d = new Date((jd - 2440587.5) * 86400000);
+  return d.toISOString().slice(0, 10);
+}
