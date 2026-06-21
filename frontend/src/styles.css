@@ -41,6 +41,8 @@ header::after{content:"LODESTAR";position:absolute;right:-12px;bottom:-34px;font
 .brandrow h1 .pac{color:var(--lime)}
 .subbar{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
 .subbar .eyebrow{color:var(--faint)}
+.methods-link{color:var(--lime-dim) !important;text-decoration:none;border-bottom:1px solid transparent}
+.methods-link:hover{color:var(--lime) !important;border-bottom-color:var(--lime)}
 .subbar .eyebrow b{color:var(--muted);font-weight:500}
 .telem{display:flex;gap:0;margin-top:16px;border:1px solid var(--line);flex-wrap:wrap}
 .telem .cell{flex:1;min-width:120px;padding:10px 14px;border-right:1px solid var(--line)}

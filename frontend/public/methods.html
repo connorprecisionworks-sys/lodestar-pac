@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lodestar PAC — Methods & Model Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0b0d;--panel:#0e1013;--line:#1f2329;--line2:#2b3037;--ink:#e8eae6;
+    --muted:#878d96;--faint:#5f6776;--lime:#c7f53b;--lime-dim:#9bbf3a;--s:#d6a93f;--m:#e8634f;--c:#6fb6e6;
+    --grotesk:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;--mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--grotesk);line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:54px 54px;background-position:-1px -1px}
+  .wrap{max-width:860px;margin:0 auto;padding:40px 24px 80px}
+  .mono{font-family:var(--mono)}
+  .eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--lime-dim)}
+  a{color:var(--lime-dim)}
+  a:hover{color:var(--lime)}
+  h1{font-weight:800;font-size:34px;letter-spacing:-.02em;margin:.3em 0 .1em}
+  h1 .pac{color:var(--lime)}
+  h2{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink);
+    margin:44px 0 4px;padding-top:18px;border-top:1px solid var(--line2);font-family:var(--mono)}
+  h2 .n{color:var(--lime);margin-right:10px}
+  h3{font-weight:600;font-size:15px;margin:22px 0 4px;color:var(--ink)}
+  p{color:#cfd3cf;margin:.6em 0}
+  .lead{color:var(--muted);font-size:15px}
+  .meta{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em;margin-top:10px}
+  ul{color:#cfd3cf;padding-left:20px}
+  li{margin:4px 0}
+  code{font-family:var(--mono);font-size:12px;background:#14171b;border:1px solid var(--line2);padding:1px 5px;border-radius:3px;color:#dfe6d6}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+  th,td{border:1px solid var(--line2);padding:7px 11px;text-align:left;font-family:var(--mono)}
+  th{background:#14171b;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.1em}
+  td.n,th.n{text-align:right}
+  .callout{background:#0e1013;border:1px solid var(--line2);border-left:2px solid var(--lime);padding:12px 16px;margin:16px 0;font-size:14px;color:#cfd3cf}
+  .pill{font-family:var(--mono);font-size:11px;padding:2px 8px;border:1px solid var(--line2);border-radius:3px;color:var(--muted)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}
+  @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
+  .kpi{background:#0e1013;border:1px solid var(--line2);padding:12px 14px}
+  .kpi .v{font-family:var(--mono);font-size:22px;color:var(--lime)}
+  .kpi .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin-top:3px}
+  footer{margin-top:50px;border-top:1px solid var(--line2);padding-top:16px;font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.04em}
+  .back{display:inline-block;margin-bottom:18px;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">&larr; back to console</a>
+  <div class="eyebrow">Methods &amp; Model Card · v1</div>
+  <h1>Lodestar <span class="pac">PAC</span></h1>
+  <p class="lead">Predictive Asteroid Characterization: an ML-augmented prospecting and feasibility-screening engine for near-Earth asteroids. This page documents what the system does, how each layer works, how it was validated, and where it is honestly uncertain.</p>
+  <div class="meta">41,884 near-Earth asteroids · JPL Small-Body Database + Asterank · static deployment · screening-grade, not flight software</div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">82%</div><div class="k">ML LOO accuracy</div></div>
+    <div class="kpi"><div class="v">6.10</div><div class="k">Eros Δv km/s (Benner 6.11)</div></div>
+    <div class="kpi"><div class="v">838</div><div class="k">objects characterized</div></div>
+    <div class="kpi"><div class="v">100%</div><div class="k">with computed Δv</div></div>
+  </div>
+
+  <h2><span class="n">00</span>Abstract</h2>
+  <p>Lodestar ranks near-Earth asteroids by estimated resource value cross-referenced with accessibility, predicts the composition of objects that have never been spectrally measured, and computes real launch windows and transfer trajectories. It is built to scale to the modern flood of newly discovered asteroids, where hand-curation cannot keep pace. Every figure it produces is an estimate with an explicit uncertainty band and a provenance tag (measured, ML-predicted, or assumed); it never presents an inference as a measurement.</p>
+
+  <h2><span class="n">01</span>System overview</h2>
+  <p>The pipeline is five independently testable layers:</p>
+  <ul>
+    <li><b>Data ingestion</b> — orbital elements, sizes, albedos, and measured spectral types from the JPL Small-Body Database, joined with the Asterank baseline. Normalized to a local columnar store of 41,884 objects.</li>
+    <li><b>ML characterization</b> — predicts compositional class and calibrated confidence for objects with no measured spectrum.</li>
+    <li><b>Astrodynamics</b> — analytic two-body propagation plus a Lambert solver and porkchop sweep for launch windows and transfer Δv.</li>
+    <li><b>Ranking &amp; value</b> — a resource-based value model and a composite value-versus-accessibility score with user-adjustable weights.</li>
+    <li><b>Interface</b> — a browser console with a ranked table, 3D orbit and catalog views, real shape models, and per-object mission feasibility.</li>
+  </ul>
+
+  <h2><span class="n">02</span>ML characterization (the differentiator)</h2>
+  <h3>The problem</h3>
+  <p>Of 41,884 near-Earth asteroids, only 267 have a measured taxonomic class. The overwhelming majority are uncharacterized. The model predicts an object's compositional complex — <span class="pill">C</span> carbonaceous, <span class="pill">S</span> stony, <span class="pill">M</span> metallic — with calibrated uncertainty, from the features that exist for far more objects.</p>
+
+  <h3>Training data &amp; class balance</h3>
+  <p>Labels come from measured Bus-DeMeo / Tholen taxonomy. Albedo (reflectivity) is the physically strongest available feature: dark surfaces indicate carbon-rich bodies, bright surfaces stony ones. Only 116 objects have both a label and a measured albedo, and the classes are heavily imbalanced:</p>
+  <table>
+    <tr><th>Class</th><th class="n">Labeled</th><th class="n">With albedo</th><th>Mean albedo</th></tr>
+    <tr><td>S — stony</td><td class="n">196</td><td class="n">83</td><td>0.26 (bright)</td></tr>
+    <tr><td>C — carbonaceous</td><td class="n">63</td><td class="n">29</td><td>0.11 (dark)</td></tr>
+    <tr><td>M — metallic</td><td class="n">8</td><td class="n">4</td><td>0.04–0.77 (degenerate)</td></tr>
+  </table>
+
+  <h3>Model</h3>
+  <p>A class-balanced random forest (200 trees, depth-capped to avoid memorizing the small set) over eight features: albedo, absolute magnitude, semi-major axis, eccentricity, inclination, and three dynamical features (Tisserand parameter relative to Jupiter, perihelion, aphelion). The dynamical features were retained only because leave-one-out testing showed they improved accuracy (82% vs 80% without them).</p>
+
+  <h3>Results</h3>
+  <p>Evaluated by leave-one-out cross-validation (the honest choice for a tiny dataset):</p>
+  <div class="callout"><b>82% accuracy</b> versus a <b>72%</b> majority-class baseline. The signal is the dark-vs-bright albedo split that separates carbonaceous from stony bodies.</div>
+  <p>Confusion matrix (rows = true class, columns = predicted):</p>
+  <table>
+    <tr><th>true \ pred</th><th class="n">C</th><th class="n">S</th><th class="n">M</th></tr>
+    <tr><td>C</td><td class="n">18</td><td class="n">11</td><td class="n">0</td></tr>
+    <tr><td>S</td><td class="n">6</td><td class="n">77</td><td class="n">0</td></tr>
+    <tr><td>M</td><td class="n">3</td><td class="n">1</td><td class="n">0</td></tr>
+  </table>
+  <p>Confidence is calibrated and meaningful — accuracy rises monotonically with the model's reported confidence, which justifies using a 0.6 confidence threshold before a prediction is allowed to influence value:</p>
+  <table>
+    <tr><th>Confidence band</th><th class="n">Objects</th><th class="n">Accuracy</th></tr>
+    <tr><td>0.0 – 0.5</td><td class="n">12</td><td class="n">67%</td></tr>
+    <tr><td>0.5 – 0.7</td><td class="n">60</td><td class="n">82%</td></tr>
+    <tr><td>0.7 – 1.0</td><td class="n">44</td><td class="n">86%</td></tr>
+  </table>
+  <p>Applied to the catalog, the model assigns a confident composition to <b>571</b> objects that had no measured spectrum, expanding the characterized population from 267 to <b>838</b> — roughly tripling it. Each prediction carries its confidence and is tagged <code>ml-predicted</code>, never <code>measured</code>.</p>
+
+  <h3>Honest limitations</h3>
+  <ul>
+    <li><b>Metallic asteroids cannot be identified from albedo.</b> The X-complex is albedo-degenerate (bright enstatite and dark primitive bodies overlap with metals), and only 4 labeled M-types exist. The model reports M as a weak prior only — never a confident call. Reliable metal identification requires radar or spectra.</li>
+    <li><b>Coverage is capped by albedo.</b> Only ~1,200 of 41,884 objects (3%) have a measured albedo, so the model is silent on the rest. This is the central bottleneck.</li>
+    <li><b>Space weathering and grain-size effects</b> bias reflectance-based inference, a known limitation in the literature.</li>
+    <li><b>The training set is small and biased</b> toward bright, well-observed objects.</li>
+  </ul>
+  <p>The mitigation for all of the above is the same and is built in: uncertainty is a first-class output, never hidden. The path past the coverage cap is multi-band colors (SDSS Moving Object Catalog and, at scale, Rubin Observatory), which exist for hundreds of thousands of objects; the pipeline is built to ingest them.</p>
+
+  <h2><span class="n">03</span>Astrodynamics &amp; launch windows</h2>
+  <p>Heliocentric state vectors are propagated analytically under two-body Keplerian motion. Transfers are solved with a universal-variable Lambert solver (Curtis, Algorithm 5.2). A porkchop sweep over departure date × time-of-flight finds the minimum-Δv launch window, including the launch burn from a 300 km parking orbit (Oberth-correct) and the arrival rendezvous burn.</p>
+  <div class="callout">Validation: the Lambert solver reproduces Curtis Example 5.2 to four decimal places, and the porkchop recovers asteroid <b>433 Eros</b>'s optimal rendezvous Δv at <b>6.10 km/s</b> against the published Benner value of <b>6.11 km/s</b>. The earlier closed-form screening proxy gave 7.6, so the Lambert engine is a genuine accuracy improvement, not a cosmetic one.</div>
+  <p>This is screening-grade: two-body analytic ephemerides, not the Horizons-precision n-body integration a real mission requires. It is explicitly a tool for deciding <i>which</i> asteroid and <i>roughly when</i>, not for flying the spacecraft.</p>
+
+  <h2><span class="n">04</span>Value &amp; resource model</h2>
+  <p>Value is built up from composition, not asserted as a single dollar-per-kilogram. Each complex maps to recoverable mass fractions of water, iron-nickel, and platinum-group metals, each with a coarse in-space value per kilogram; mass comes from size and an assumed bulk density. This yields per-object resource tonnages and a headline value with an explicit uncertainty band. The uncertainty widens by provenance tier: tightest for measured composition, wider for ML-predicted, widest for assumed, and further by how the size was derived.</p>
+  <p>These are deliberately order-of-magnitude figures for triage (is this worth a closer look), not appraisals. The model is the reason the famous targets surface correctly: the lowest-Δv high-value objects it ranks are the real mission destinations — Apophis, Itokawa, Bennu, Eros.</p>
+
+  <h2><span class="n">05</span>Mission feasibility</h2>
+  <p>Each object's Δv is translated into a fuel-and-effort story via the Tsiolkovsky rocket equation: the propellant mass fraction for a chemical engine versus an electric/ion engine, plus a feasibility tier. At Eros's 6.1 km/s, a chemical stage must be 86% propellant by mass; an ion stage, 19% — which is why deep-space missions go electric.</p>
+
+  <h2><span class="n">06</span>The honesty framework</h2>
+  <p>Every estimate carries provenance and uncertainty. Composition is tagged <code>measured</code>, <code>ml-predicted</code>, or <code>assumed</code>. Δv is tagged <code>benner</code> (published) or <code>computed</code>. Value and resources ship as ranges. The litmus test for every feature is whether it helps decide which asteroid to study or visit next; anything drifting toward "fly the mission" is out of scope.</p>
+
+  <h2><span class="n">07</span>Limitations &amp; future work</h2>
+  <ul>
+    <li>ML coverage is albedo-limited; multi-band colors (SDSS, Rubin) are the path to the uncharacterized majority.</li>
+    <li>Metallic identification needs radar/spectra, not reflectance.</li>
+    <li>Trajectories are two-body screening-grade; Horizons-precision ephemerides and rendezvous/low-thrust optimization are future work.</li>
+    <li>Value figures are order-of-magnitude, not appraisals.</li>
+  </ul>
+
+  <h2><span class="n">08</span>References</h2>
+  <ul>
+    <li>Curtis, H. — <i>Orbital Mechanics for Engineering Students</i> (universal-variable Lambert, Alg. 5.2).</li>
+    <li>Benner, L. — LEO-to-NEO rendezvous Δv tables (Shoemaker &amp; Helin, 1978 formalism).</li>
+    <li>DeMeo, Binzel et al. — Bus-DeMeo asteroid taxonomy.</li>
+    <li>Mainzer et al. — NEOWISE diameters and albedos.</li>
+    <li>JPL Small-Body Database; Asterank (Ian Webster).</li>
+  </ul>
+
+  <footer>
+    Lodestar PAC v1 · Methods &amp; Model Card · all figures are estimates with uncertainty, never measurements · built end-to-end as a portfolio demonstration of data engineering, applied astrodynamics, and machine learning.
+  </footer>
+</div>
+</body>
+</html>
