@@ -31,7 +31,7 @@ SBDB_FIELDS = [
     "neo", "pha", "class",
     "H", "diameter", "albedo",
     "spec_B", "spec_T",          # Bus-DeMeo and Tholen taxonomy (measured, sparse)
-    "e", "a", "q", "i", "om", "w", "ma", "per", "moid",
+    "e", "a", "q", "i", "om", "w", "ma", "per", "moid", "epoch",
 ]
 
 RAW_PATH = Path("data/raw/sbdb_neo.parquet")

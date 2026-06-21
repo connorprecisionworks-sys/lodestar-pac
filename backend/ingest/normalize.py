@@ -71,6 +71,7 @@ def normalize_sbdb(df: pd.DataFrame) -> pd.DataFrame:
     out["per_days"] = _num(_col(df, "per"))
     out["moid_au"] = _num(_col(df, "moid"))
     out["q_au"] = _num(_col(df, "q"))
+    out["epoch_jd"] = _num(_col(df, "epoch"))
 
     out["H_mag"] = _num(_col(df, "H"))
     out["albedo"] = _num(_col(df, "albedo"))

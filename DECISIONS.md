@@ -30,3 +30,15 @@ Conclusion: **compute value and delta-v ourselves** over the full SBDB catalogue
 **Scope fence on "flight-path simulation."** Connor wants flight-path simulation; that is Phase 2 (Lambert + porkchop + Horizons ephemerides) and Phase 3 (optimized 3D transfers, rendezvous), NOT Phase 1. What shipped now: real orbits from real elements (honest), plus a **schematic** transfer arc clearly labeled illustrative. The `/api/trajectory/{id}` endpoint returns the screening-grade breakdown today and is shaped so the Phase 2 Lambert/porkchop solve drops in behind the same response, no UI change. Horizons can't be reached from the sandbox, so Phase 2 ephemeris work runs on Connor's Mac.
 
 **Run model.** Backend `uv run --extra api uvicorn backend.api.main:app --port 8000`; frontend `cd frontend && npm run dev` (proxies `/api` to :8000). Verified end to end in-sandbox: frontend builds (39 modules), dev proxy routes to the API, ranking returns correct value-sorted results.
+
+## 2026-06-21 — UI polish + Phase 2 astrodynamics engine
+
+**UI polish pass.** Fixed the "vibe-coded" tells: a single money formatter that rolls units properly (no more `$1350.0Q`; now `$1.35Qi`/`$214Qa`/`$1.00T`), tabular-aligned numbers, fixed row rhythm, removed the redundant per-row type sub-label and value range (full range stays in the detail panel), zero-padded ranks, lime active-sort header, quiet benner/est markers, crisp lime selected-row edge. Shared `frontend/src/lib/format.js`.
+
+**Phase 2 astrodynamics engine BUILT and VALIDATED (math only; UI next).** `backend/astro/kepler.py` (analytic two-body propagation to heliocentric state, AU/day), `lambert.py` (universal-variable Lambert, Curtis Alg 5.2), `porkchop.py` (departure x time-of-flight sweep -> optimal launch window). Validation: Lambert reproduces Curtis Example 5.2 to 4 decimals; Kepler hits Earth's perihelion distance (0.983 AU in January) with period closure to 1e-5 AU; **the porkchop recovers Eros's optimal rendezvous dv at 6.10 km/s vs the published Benner 6.11** (the Phase-1 Hohmann proxy gave 7.6). The engine is real and accurate. Two-body screening-grade; Horizons-precision ephemerides are a later upgrade.
+
+**KEY constraint for Phase 2 on the live (static) deploy.** The deployed app has no backend, so the live porkchop will be a JS port of this engine computed on object selection (one porkchop ~0.1s, fine in-browser). The Python engine is the validated reference + the API path + the test guard.
+
+**Added `epoch_jd` to SBDB ingestion + schema + normalize** so real elements can anchor to real calendar dates (propagation needs the element epoch). This requires Connor to re-run the pipeline (sbdb -> normalize -> enrich -> export) to populate it; until then the porkchop can validate on synthetic elements but not real objects.
+
+**Next:** port kepler+lambert+porkchop to JS (`frontend/src/lib/`), add a porkchop heatmap (canvas) + draw the real Lambert transfer arc in the 3D viewer, wire the Compute-trajectory button to it. Then Connor re-pulls SBDB for epochs.

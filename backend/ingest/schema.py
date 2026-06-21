@@ -35,6 +35,7 @@ ORBIT_COLUMNS = [
     "per_days",      # orbital period (days)
     "moid_au",       # minimum orbit intersection distance w/ Earth (au)
     "q_au",          # perihelion distance (au)
+    "epoch_jd",      # epoch of the elements (Julian Date) - needed to propagate
 ]
 PHYSICAL_COLUMNS = [
     "H_mag",         # absolute magnitude
