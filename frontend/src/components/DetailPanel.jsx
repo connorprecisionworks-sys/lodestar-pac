@@ -1,5 +1,7 @@
-import { fmtQty, fmtUSD, jdToDate } from "../lib/format.js";
+import { fmtUSD, jdToDate } from "../lib/format.js";
 import PorkchopPlot from "./PorkchopPlot.jsx";
+import AsteroidSpecimen from "./AsteroidSpecimen.jsx";
+import MaterialBreakdown from "./MaterialBreakdown.jsx";
 
 function Row({ k, v }) {
   return <div className="kv"><span>{k}</span><span className="mono">{v}</span></div>;
@@ -24,12 +26,13 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
       <Row k="Size" v={detail.display_diameter_km ? detail.display_diameter_km.toFixed(2) + " km" : "-"} />
       <Row k="Orbit a / e / i" v={`${detail.a_au} au / ${detail.e} / ${detail.i_deg}°`} />
 
+      <h3>Specimen</h3>
+      <AsteroidSpecimen detail={detail} />
+
       {detail.water_tons != null && (
         <>
-          <h3>Estimated resources</h3>
-          <Row k="Water" v={`${fmtQty(detail.water_tons)} t`} />
-          <Row k="Iron-nickel" v={`${fmtQty(detail.metal_tons)} t`} />
-          <Row k="Platinum-group" v={`${fmtQty(detail.pgm_kg)} kg`} />
+          <h3>Estimated composition</h3>
+          <MaterialBreakdown complex={detail.value_complex} diameterKm={detail.display_diameter_km} />
         </>
       )}
 

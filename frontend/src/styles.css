@@ -129,6 +129,18 @@ td.score{color:var(--lime)}
 .note.small{font-size:11px;margin-top:10px;color:var(--faint);font-family:var(--mono);line-height:1.6}
 .traj{margin-top:6px;border-top:1px solid var(--line2);padding-top:6px}
 .porkchop{width:100%;height:auto;margin-top:12px;border:1px solid var(--line2);background:#0c0e11;display:block}
+.specimen{position:relative;margin-top:4px}
+.specimen-canvas{width:100%;height:240px;border:1px solid var(--line2);background:#0a0b0d;cursor:grab}
+.specimen-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:var(--mono);font-size:10px;color:var(--faint);pointer-events:none;padding:0 24px;letter-spacing:.06em;line-height:1.6}
+.matbox{margin-top:4px}
+.matbar{display:flex;width:100%;height:8px;border:1px solid var(--line2);overflow:hidden;margin-bottom:10px}
+.matbar span{height:100%}
+.matrow{display:grid;grid-template-columns:14px 1fr auto auto;gap:10px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line);font-size:12px}
+.matrow .sw{width:10px;height:10px;border-radius:2px}
+.matrow .mn{color:var(--ink)}
+.matrow .ma{color:var(--muted);text-align:right;font-size:11px}
+.matrow .mv{color:var(--lime-dim);text-align:right;font-size:11px}
 
 /* ---- orbit viewer ---- */
 .viewerpanel{padding-bottom:12px}
