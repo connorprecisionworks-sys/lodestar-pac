@@ -1,7 +1,9 @@
 export default function Controls({ q, weight, spec, dvMax, onChange }) {
   const wLabel = weight < 0.34 ? "favor access" : weight > 0.66 ? "favor value" : "balanced";
   return (
-    <div className="panel controls">
+    <div className="panel">
+      <h2 data-idx="00">Parameters <span className="note">value vs accessibility · filters</span></h2>
+      <div className="controls">
       <div>
         <label>Priority: accessibility &harr; value <em>{wLabel}</em></label>
         <input type="range" min="0" max="100" value={Math.round(weight * 100)}
@@ -27,6 +29,7 @@ export default function Controls({ q, weight, spec, dvMax, onChange }) {
         <label>Search name / designation</label>
         <input type="text" value={q} placeholder="Apophis, Eros, 2008..."
           onChange={(e) => onChange({ q: e.target.value })} />
+      </div>
       </div>
     </div>
   );

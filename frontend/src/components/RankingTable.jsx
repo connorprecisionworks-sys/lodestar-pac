@@ -22,7 +22,7 @@ export default function RankingTable({ data, selectedId, onSelect, sort, onSort,
   const pages = Math.max(1, Math.ceil(total / (data?.page_size || 50)));
   return (
     <div className="panel">
-      <h2>Ranked shortlist <span className="note">{total.toLocaleString()} match the filters</span></h2>
+      <h2 data-idx="01">Ranked Targets <span className="note">{total.toLocaleString()} match filters</span></h2>
       <div className="table-scroll">
         <table>
           <thead>

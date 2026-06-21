@@ -51,18 +51,28 @@ export default function App() {
   return (
     <div className="wrap">
       <header>
-        <h1>Lodestar PAC <span className="sub">/ prospecting console</span></h1>
-        <div className="tag">
-          Ranking near-Earth asteroids by estimated value against accessibility. Every figure is an estimate with uncertainty, never a measurement.
+        <div className="brandrow">
+          <div className="mark" />
+          <h1>Lodestar <span className="pac">PAC</span></h1>
+        </div>
+        <div className="subbar">
+          <span className="eyebrow"><b>Predictive Asteroid Characterization</b></span>
+          <span className="eyebrow">Prospecting Console</span>
+          <span className="eyebrow">Near-Earth Catalog</span>
+          <span className="eyebrow">Phase 1</span>
         </div>
         {meta && (
-          <div className="metaline mono">
-            {meta.n.toLocaleString()} NEAs · {meta.measured_spec.toLocaleString()} measured types · {meta.benner_dv.toLocaleString()} Benner Δv · rest estimated
+          <div className="telem">
+            <div className="cell"><div className="k">Catalog objects</div><div className="v">{meta.n.toLocaleString()}</div></div>
+            <div className="cell"><div className="k">Measured types</div><div className="v">{meta.measured_spec.toLocaleString()}</div></div>
+            <div className="cell"><div className="k">Benner Δv refs</div><div className="v accent">{meta.benner_dv.toLocaleString()}</div></div>
+            <div className="cell"><div className="k">Δv envelope</div><div className="v">{meta.dv_range[0].toFixed(1)}–{meta.dv_range[1].toFixed(0)} km/s</div></div>
+            <div className="cell"><div className="k">Value model</div><div className="v accent">Computed</div></div>
           </div>
         )}
       </header>
 
-      {err && <div className="err">Could not load data: {err}</div>}
+      {err && <div className="err">FAULT // could not load dataset: {err}</div>}
 
       <Controls q={ctrl.q} weight={ctrl.weight} spec={ctrl.spec} dvMax={ctrl.dvMax} onChange={onChange} />
 
@@ -71,7 +81,7 @@ export default function App() {
           sort={sort} onSort={onSort} page={page} onPage={setPage} />
         <div className="rightcol">
           <div className="panel viewerpanel">
-            <h2>Orbit view <span className="note">heliocentric, real elements</span></h2>
+            <h2 data-idx="02">Orbit View <span className="note">Heliocentric · real elements</span></h2>
             <OrbitViewer detail={detail} trajectory={trajectory} />
           </div>
           <DetailPanel detail={detail} trajectory={trajectory} busy={busy} onCompute={onCompute} />
@@ -79,7 +89,8 @@ export default function App() {
       </div>
 
       <footer>
-        Layer 1 ingestion · Layer 3 screening Δv · Layer 4 ranking — built. Layer 2 ML (Phase 4) and real launch-window simulation (Phase 2) next. Orbits drawn from real Keplerian elements; the transfer arc is schematic until Phase 2.
+        <span className="lime">▮</span> L1 Ingestion · L3 Screening Δv · L4 Ranking — Operational &nbsp;//&nbsp; L2 ML Characterization (Phase 4) · Launch-Window Simulation (Phase 2) — Pending<br />
+        Orbits rendered from real Keplerian elements · Transfer arc schematic until Phase 2 · All figures estimates with uncertainty, never measurements
       </footer>
     </div>
   );

@@ -13,12 +13,12 @@ function Row({ k, v }) {
 
 export default function DetailPanel({ detail, trajectory, busy, onCompute }) {
   if (!detail) {
-    return <div className="panel"><h2>Object detail</h2>
-      <p className="note">Select an asteroid from the table to see its orbit, value breakdown, and run a trajectory estimate.</p></div>;
+    return <div className="panel"><h2 data-idx="03">Object Detail</h2>
+      <p className="note">Select a target from the table to load its orbit, value breakdown, and run a trajectory estimate.</p></div>;
   }
   return (
     <div className="panel">
-      <h2>{detail.full_name.trim()}</h2>
+      <h2 data-idx="03">{detail.full_name.trim()}</h2>
       <Row k="Complex" v={detail.value_complex + (detail.spec_is_assumed ? " (assumed)" : " (measured)")} />
       <Row k="Est. value" v={fmtUSD(detail.value_usd)} />
       <Row k="Value range" v={`${fmtUSD(detail.value_low)} - ${fmtUSD(detail.value_high)}`} />

@@ -23,7 +23,7 @@ export default function OrbitViewer({ detail, trajectory }) {
     const height = mount.clientHeight || 460;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0e17);
+    scene.background = new THREE.Color(0x08090b);
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
     camera.position.set(0, -9, 7);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -37,24 +37,24 @@ export default function OrbitViewer({ detail, trajectory }) {
 
     // Sun
     const sun = new THREE.Mesh(
-      new THREE.SphereGeometry(0.35, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0xffd166 })
+      new THREE.SphereGeometry(0.32, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0xffcf5e })
     );
     scene.add(sun);
     scene.add(new THREE.PointLight(0xffffff, 1.6, 0));
-    scene.add(new THREE.AmbientLight(0x404a60, 1.2));
+    scene.add(new THREE.AmbientLight(0x3a3f47, 1.3));
 
     // ecliptic reference grid
-    const grid = new THREE.GridHelper(20, 20, 0x1c2740, 0x141c2c);
+    const grid = new THREE.GridHelper(20, 20, 0x171a1f, 0x111418);
     grid.rotation.x = Math.PI / 2;
     scene.add(grid);
 
     // Earth orbit + marker
-    const earthOrbit = lineFromPoints(orbitPoints(EARTH), 0x6f9cff, 0.7);
+    const earthOrbit = lineFromPoints(orbitPoints(EARTH), 0x4a5158, 0.65);
     scene.add(earthOrbit);
     const earthMarker = new THREE.Mesh(
-      new THREE.SphereGeometry(0.16, 16, 16),
-      new THREE.MeshStandardMaterial({ color: 0x6f9cff, emissive: 0x24407f })
+      new THREE.SphereGeometry(0.15, 16, 16),
+      new THREE.MeshStandardMaterial({ color: 0xdfe3e0, emissive: 0x2a2f36 })
     );
     scene.add(earthMarker);
 
@@ -115,11 +115,11 @@ export default function OrbitViewer({ detail, trajectory }) {
       per_days: detail.per_days,
     };
     R.asteroidEl = el;
-    R.asteroidOrbit = lineFromPoints(orbitPoints(el), 0xe8634f, 0.9);
+    R.asteroidOrbit = lineFromPoints(orbitPoints(el), 0xc7f53b, 0.95);
     R.scene.add(R.asteroidOrbit);
     R.asteroidMarker = new THREE.Mesh(
       new THREE.SphereGeometry(0.14, 16, 16),
-      new THREE.MeshStandardMaterial({ color: 0xe8634f, emissive: 0x5a1c12 })
+      new THREE.MeshStandardMaterial({ color: 0xc7f53b, emissive: 0x37460f })
     );
     R.scene.add(R.asteroidMarker);
   }, [detail]);
@@ -136,7 +136,7 @@ export default function OrbitViewer({ detail, trajectory }) {
     const pts = transferArc(ep, ap);
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pts.map((v) => v * SCALE), 3));
-    const m = new THREE.LineDashedMaterial({ color: 0x9b7cff, dashSize: 0.5, gapSize: 0.3 });
+    const m = new THREE.LineDashedMaterial({ color: 0xc7f53b, dashSize: 0.4, gapSize: 0.25 });
     const line = new THREE.Line(g, m);
     line.computeLineDistances();
     R.transferLine = line;
@@ -145,12 +145,16 @@ export default function OrbitViewer({ detail, trajectory }) {
 
   return (
     <div className="orbit-wrap">
-      <div ref={mountRef} className="orbit-canvas" />
+      <div ref={mountRef} className="orbit-canvas">
+        <span className="orbit-corner tl">Heliocentric Frame · Ecliptic</span>
+        <span className="orbit-corner tr">FIG / 02</span>
+        <span className="orbit-corner bl">Drag to orbit · Scroll to zoom</span>
+      </div>
       <div className="orbit-legend">
-        <span><i style={{ background: "#ffd166" }} />Sun</span>
-        <span><i style={{ background: "#6f9cff" }} />Earth</span>
-        <span><i style={{ background: "#e8634f" }} />Selected asteroid</span>
-        {trajectory && <span><i style={{ background: "#9b7cff" }} />Schematic transfer</span>}
+        <span><i style={{ background: "#ffcf5e" }} />Sun</span>
+        <span><i style={{ background: "#dfe3e0" }} />Earth</span>
+        <span><i style={{ background: "#c7f53b" }} />Target</span>
+        {trajectory && <span><i style={{ background: "#c7f53b" }} />Transfer (schematic)</span>}
       </div>
     </div>
   );
