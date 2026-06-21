@@ -5,6 +5,7 @@ import Controls from "./components/Controls.jsx";
 import RankingTable from "./components/RankingTable.jsx";
 import DetailPanel from "./components/DetailPanel.jsx";
 import OrbitViewer from "./components/OrbitViewer.jsx";
+import CommandCenter from "./components/CommandCenter.jsx";
 
 export default function App() {
   const [ctrl, setCtrl] = useState({ weight: 0.5, spec: "all", dvMax: 40, q: "" });
@@ -88,6 +89,8 @@ export default function App() {
           <DetailPanel detail={detail} trajectory={trajectory} busy={busy} onCompute={onCompute} />
         </div>
       </div>
+
+      <CommandCenter selectedId={selectedId} onSelect={setSelectedId} />
 
       <footer>
         <span className="lime">▮</span> L1 Ingestion · L3 Screening Δv · L4 Ranking — Operational &nbsp;//&nbsp; L2 ML Characterization (Phase 4) · Launch-Window Simulation (Phase 2) — Pending<br />

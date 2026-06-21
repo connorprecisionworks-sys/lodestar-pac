@@ -6,6 +6,15 @@ const D2R = Math.PI / 180;
 // Earth's orbit, for the reference ring.
 export const EARTH = { a_au: 1.0, e: 0.0167, i_deg: 0, om_deg: 0, w_deg: 102.9, ma_deg: 0 };
 
+// Inner planets (J2000 elements) for solar-system context. period_days sets the
+// marker's animation rate. color is the render tint.
+export const PLANETS = [
+  { name: "Mercury", color: 0x9a8f80, a_au: 0.387, e: 0.2056, i_deg: 7.00, om_deg: 48.33, w_deg: 29.13, ma_deg: 174.79, period_days: 87.97 },
+  { name: "Venus", color: 0xd8b56b, a_au: 0.723, e: 0.0068, i_deg: 3.39, om_deg: 76.68, w_deg: 54.85, ma_deg: 50.45, period_days: 224.70 },
+  { name: "Earth", color: 0x6f9cff, a_au: 1.0, e: 0.0167, i_deg: 0.0, om_deg: 0.0, w_deg: 102.94, ma_deg: -2.48, period_days: 365.256 },
+  { name: "Mars", color: 0xd1593f, a_au: 1.524, e: 0.0934, i_deg: 1.85, om_deg: 49.56, w_deg: 286.48, ma_deg: 19.39, period_days: 686.98 },
+];
+
 // Rotate a perifocal point (xp, yp, 0) into the ecliptic frame.
 function perifocalToEcliptic(xp, yp, om, inc, w) {
   const cO = Math.cos(om), sO = Math.sin(om);

@@ -35,6 +35,10 @@ export const source = {
     return { ...meta, predicted_types: predicted };
   },
 
+  async allRecords() {
+    return (await load()).records;
+  },
+
   async asteroids({ weight = 0.5, spec = "all", dv_max, q = "", sort = "score", page = 0, page_size = 50 }) {
     const { records, meta } = await load();
     const [lo, hi] = meta.value_log_range;
