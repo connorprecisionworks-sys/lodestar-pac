@@ -137,10 +137,10 @@ export default function OrbitViewer({ detail, trajectory }) {
       w_deg: detail.w_deg, ma_deg: detail.ma_deg, per_days: detail.per_days,
     };
     R.asteroidEl = el;
-    R.asteroidOrbit = orbitLine(el, 0xc7f53b, 0.95);
+    R.asteroidOrbit = orbitLine(el, 0x46dfe6, 0.95);
     R.scene.add(R.asteroidOrbit);
     R.asteroidMarker = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 16),
-      new THREE.MeshStandardMaterial({ color: 0xc7f53b, emissive: 0x37460f }));
+      new THREE.MeshStandardMaterial({ color: 0x46dfe6, emissive: 0x0e3a3d }));
     R.scene.add(R.asteroidMarker);
   }, [detail]);
 
@@ -186,7 +186,7 @@ export default function OrbitViewer({ detail, trajectory }) {
     const pts = transferArc(ep, ap);
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pts.map((v) => v * SCALE), 3));
-    const line = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xc7f53b, dashSize: 0.4, gapSize: 0.25 }));
+    const line = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0x46dfe6, dashSize: 0.4, gapSize: 0.25 }));
     line.computeLineDistances();
     R.transferLine = line;
     R.scene.add(line);
@@ -203,7 +203,7 @@ export default function OrbitViewer({ detail, trajectory }) {
         <span><i style={{ background: "#ffcf5e" }} />Sun</span>
         <span><i style={{ background: "#6f9cff" }} />Earth</span>
         <span><i style={{ background: "#d1593f" }} />Planets</span>
-        <span><i style={{ background: "#c7f53b" }} />Target</span>
+        <span><i style={{ background: "#46dfe6" }} />Target</span>
         {trajectory?.transferPath && <span><i style={{ background: "#f0f4ff" }} />Transfer + craft</span>}
       </div>
     </div>

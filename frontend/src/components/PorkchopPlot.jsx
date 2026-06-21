@@ -3,10 +3,10 @@ import { useEffect, useRef } from "react";
 function lerp(a, b, t) { return a + (b - a) * t; }
 function color(dv, lo, span) {
   const t = Math.min(Math.max((dv - lo) / span, 0), 1);
-  // lime (low / best) -> amber -> dark (high)
+  // cyan (low / best) -> teal -> dark (high)
   let r, g, b;
-  if (t < 0.5) { const u = t / 0.5; r = lerp(199, 214, u); g = lerp(245, 160, u); b = lerp(59, 65, u); }
-  else { const u = (t - 0.5) / 0.5; r = lerp(214, 38, u); g = lerp(160, 34, u); b = lerp(65, 30, u); }
+  if (t < 0.5) { const u = t / 0.5; r = lerp(70, 47, u); g = lerp(223, 153, u); b = lerp(230, 160, u); }
+  else { const u = (t - 0.5) / 0.5; r = lerp(47, 28, u); g = lerp(153, 32, u); b = lerp(160, 38, u); }
   return `rgb(${r | 0},${g | 0},${b | 0})`;
 }
 

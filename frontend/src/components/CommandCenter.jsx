@@ -118,7 +118,7 @@ export default function CommandCenter({ selectedId, onSelect }) {
     if (i < 0) return;
     const arr = R.points.geometry.getAttribute("position");
     const m = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16),
-      new THREE.MeshBasicMaterial({ color: 0xc7f53b }));
+      new THREE.MeshBasicMaterial({ color: 0x46dfe6 }));
     m.position.set(arr.getX(i), arr.getY(i), arr.getZ(i));
     R.scene.add(m);
     R.highlight = m;
@@ -133,7 +133,7 @@ export default function CommandCenter({ selectedId, onSelect }) {
           <span><i style={{ background: "#5aa9e6" }} />C carbon</span>
           <span><i style={{ background: "#d6a93f" }} />S stony</span>
           <span><i style={{ background: "#e8634f" }} />M metallic</span>
-          <span><i style={{ background: "#c7f53b" }} />selected</span>
+          <span><i style={{ background: "#46dfe6" }} />selected</span>
         </div>
       </div>
     </div>
