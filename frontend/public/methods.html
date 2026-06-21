@@ -64,7 +64,7 @@
 
   <div class="story">
     <section class="step hero">
-      <img class="star" src="/brand/star-glitch.gif" alt="" />
+      <img class="star" src="/brand/star-spin.gif" alt="" />
       <img class="word" src="/brand/wordmark.png" alt="Lodestar PAC" />
       <div class="eyebrow" style="margin-top:14px;color:var(--faint)">Research · Methods &amp; Model Card</div>
       <div class="tag">Characterizing the asteroids no one has measured — ranking them by value and accessibility, predicting what they are made of, and computing when to launch.</div>
@@ -176,9 +176,9 @@ camera.position.set(0, 0, 6);
 const renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:true, alpha:true });
 renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 
-scene.add(new THREE.AmbientLight(0x404654, 0.9));
-const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(5,3,5); scene.add(key);
-const rim = new THREE.DirectionalLight(0x6a86ff, 1.2); rim.position.set(-6,-2,-4); scene.add(rim);
+scene.add(new THREE.AmbientLight(0x6b7180, 1.05));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(5,3,6); scene.add(key);
+const rim = new THREE.DirectionalLight(0x2a3a52, 0.7); rim.position.set(-6,-2,-4); scene.add(rim);
 
 // Earth: load /brand/earth.glb, else a planet-style fallback sphere
 let earth;
@@ -196,7 +196,8 @@ function fallbackEarth(){
 const loader = new GLTFLoader();
 loader.load('/brand/earth.glb', g=>{
   const o=g.scene; const box=new THREE.Box3().setFromObject(o); const s=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
-  o.position.sub(c); o.scale.setScalar(4.4/Math.max(s.x,s.y,s.z));
+  o.position.sub(c); o.scale.setScalar(3.3/Math.max(s.x,s.y,s.z));
+  o.traverse(m=>{ if(m.isMesh && m.material){ m.material.metalness=0; m.material.roughness=1; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
   const wrap=new THREE.Group(); wrap.add(o); scene.add(wrap); earth=wrap;
 }, undefined, ()=>{ earth=fallbackEarth(); scene.add(earth); });
 
@@ -206,9 +207,9 @@ const models = {}; let active = null;
 for(const name of ASTEROIDS){
   loader.load(`/models/${name}.glb`, g=>{
     const o=g.scene; const box=new THREE.Box3().setFromObject(o); const s=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
-    o.position.sub(c); o.scale.setScalar(1.7/Math.max(s.x,s.y,s.z));
-    o.traverse(m=>{ if(m.isMesh){ m.material=new THREE.MeshStandardMaterial({color:0x8c8378,roughness:0.95}); m.material.transparent=true; m.material.opacity=0; }});
-    const grp=new THREE.Group(); grp.add(o); grp.position.set(2.1,-0.2,2.2); grp.userData.t=0;
+    o.position.sub(c); o.scale.setScalar(2.3/Math.max(s.x,s.y,s.z));
+    o.traverse(m=>{ if(m.isMesh){ m.material=new THREE.MeshStandardMaterial({color:0xb4ad9f,roughness:0.9,emissive:0x14110c,emissiveIntensity:1}); m.material.transparent=true; m.material.opacity=0; }});
+    const grp=new THREE.Group(); grp.add(o); grp.position.set(1.45,-0.1,3.0); grp.userData.t=0;
     scene.add(grp); models[name]=grp;
   });
 }
@@ -228,7 +229,7 @@ function loop(){
     grp.userData.t += (want-grp.userData.t)*0.08;
     grp.rotation.y += 0.004;
     grp.children[0].traverse(m=>{ if(m.isMesh) m.material.opacity=grp.userData.t; });
-    grp.position.x = 2.1 + (1-grp.userData.t)*0.6;
+    grp.position.x = 1.45 + (1-grp.userData.t)*0.6;
     grp.visible = grp.userData.t>0.01;
   }
   renderer.render(scene,camera);
