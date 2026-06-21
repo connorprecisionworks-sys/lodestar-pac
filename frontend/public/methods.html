@@ -197,7 +197,7 @@ const loader = new GLTFLoader();
 loader.load('/brand/earth.glb', g=>{
   const o=g.scene; const box=new THREE.Box3().setFromObject(o); const s=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
   o.position.sub(c); o.scale.setScalar(3.3/Math.max(s.x,s.y,s.z));
-  o.traverse(m=>{ if(m.isMesh && m.material){ m.material.metalness=0; m.material.roughness=1; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
+  o.traverse(m=>{ if(m.isMesh && m.material){ m.material.metalness=0; m.material.roughness=1; m.material.transparent=true; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
   const wrap=new THREE.Group(); wrap.add(o); scene.add(wrap); earth=wrap;
 }, undefined, ()=>{ earth=fallbackEarth(); scene.add(earth); });
 
@@ -223,13 +223,17 @@ const io = new IntersectionObserver((entries)=>{
 document.querySelectorAll('.step[data-model]').forEach(s=>io.observe(s));
 
 function loop(){
-  if(earth){ earth.rotation.y = progress*Math.PI*3 + performance.now()*0.00004; earth.rotation.x = -0.18; }
+  if(earth){
+    earth.rotation.y = progress*Math.PI*3 + performance.now()*0.00004; earth.rotation.x = -0.18;
+    const eo = Math.max(0, Math.min(1, (0.18 - progress)/0.09)); // visible in the hero, gone in the steps
+    earth.visible = eo > 0.01;
+    earth.traverse(m=>{ if(m.isMesh && m.material){ m.material.transparent=true; m.material.opacity=eo; }});
+  }
   for(const name in models){
     const grp=models[name]; const want = (name===active)?1:0;
     grp.userData.t += (want-grp.userData.t)*0.08;
-    grp.rotation.y += 0.004;
     grp.children[0].traverse(m=>{ if(m.isMesh) m.material.opacity=grp.userData.t; });
-    grp.position.x = 1.45 + (1-grp.userData.t)*0.6;
+    grp.position.x = 1.45;
     grp.visible = grp.userData.t>0.01;
   }
   renderer.render(scene,camera);
