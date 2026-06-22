@@ -53,6 +53,32 @@
     font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9;background:linear-gradient(0deg,var(--bg) 70%,transparent)}
   footer .div{border-top:1px solid var(--line2);margin-bottom:18px}
   footer a{color:#fff}
+
+  /* model-performance charts */
+  .perf{position:relative;z-index:1;background:var(--bg);max-width:1180px;margin:0 auto;padding:60px 7vw 30px}
+  .perfhead{max-width:700px;margin-bottom:32px}
+  .perfhead h2{margin-top:6px}
+  .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2);border:1px solid var(--line2)}
+  @media(max-width:760px){.cgrid{grid-template-columns:1fr}}
+  .chart{background:#080809;padding:24px 26px;opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+  .chart.in{opacity:1;transform:none}
+  .chart.wide{grid-column:1/-1}
+  .chart h3{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink);margin:0 0 3px}
+  .chart .sub{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint);margin-bottom:18px;text-transform:uppercase}
+  .chart .cap{font-size:13px;color:var(--muted);margin:16px 0 0;line-height:1.6}
+  .chart svg{width:100%;height:auto;display:block;overflow:visible}
+  .gbar{transform-box:fill-box;transform-origin:left center;transform:scaleX(0);transition:transform 1.05s cubic-bezier(.2,.75,.2,1)}
+  .chart.in .gbar{transform:scaleX(1)}
+  .gcol{transform-box:fill-box;transform-origin:bottom center;transform:scaleY(0);transition:transform 1.05s cubic-bezier(.2,.75,.2,1)}
+  .chart.in .gcol{transform:scaleY(1)}
+  .gcell{opacity:0;transition:opacity .9s ease}
+  .chart.in .gcell{opacity:1}
+  .glab{opacity:0;transition:opacity .6s ease .35s}
+  .chart.in .glab{opacity:1}
+  .ax{stroke:var(--line2);stroke-width:1}
+  .axt{font-family:var(--mono);font-size:9px;fill:var(--faint)}
+  .lab{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+  .val{font-family:var(--mono);font-size:11px;fill:var(--ink)}
 </style>
 </head>
 <body>
@@ -71,7 +97,7 @@
       <div class="kpis">
         <div class="kpi"><div class="v">41,884</div><div class="k">near-Earth asteroids</div></div>
         <div class="kpi"><div class="v">82%</div><div class="k">ML accuracy (LOO)</div></div>
-        <div class="kpi"><div class="v">838</div><div class="k">characterized, from 267</div></div>
+        <div class="kpi"><div class="v">1,354</div><div class="k">characterized, from 267</div></div>
         <div class="kpi"><div class="v">6.10</div><div class="k">Eros Δv · Benner 6.11</div></div>
       </div>
       <div class="scrollcue">scroll ↓</div>
@@ -96,7 +122,7 @@
       <div class="block">
         <div class="num">02 — Machine characterization</div>
         <h2>Predicting composition from reflectivity.</h2>
-        <p>A class-balanced model infers an asteroid's compositional class and a calibrated confidence from albedo and dynamics. It reaches <b>82% accuracy</b> against a 72% baseline and triples the characterized population to <b>838</b> — every prediction tagged, never disguised as a measurement.</p>
+        <p>A class-balanced model infers an asteroid's compositional class and a calibrated confidence from albedo and dynamics. It reaches <b>82% accuracy</b> against a 72% baseline and expands the characterized population fivefold to <b>1,354</b> — every prediction tagged, never disguised as a measurement.</p>
         <div class="card">
           <div class="cn">4179 Toutatis <span class="pill">S</span></div>
           <div class="cr"><span>Composition</span><b>stony · ML-predicted</b></div>
@@ -151,6 +177,146 @@
       </div>
     </section>
   </div>
+
+  <section class="perf" id="perf">
+    <div class="perfhead">
+      <div class="num">06 — Model performance</div>
+      <h2>How well the characterization model actually works.</h2>
+      <p>Every number below is measured by leave-one-out cross-validation on the 116 near-Earth asteroids that have both a measured composition and an albedo. No object is ever scored by a model that has seen it. Where the model is weak, the chart shows it.</p>
+    </div>
+
+    <div class="cgrid">
+      <!-- 1. accuracy vs baseline -->
+      <div class="chart">
+        <h3>Accuracy vs. baseline</h3>
+        <div class="sub">leave-one-out · 116 objects</div>
+        <svg viewBox="0 0 340 150" aria-label="Accuracy versus baseline">
+          <line class="ax" x1="14" y1="18" x2="14" y2="132" />
+          <line class="ax" x1="326" y1="18" x2="326" y2="132" stroke-dasharray="2 4" />
+          <text class="axt glab" x="326" y="146" text-anchor="end">100%</text>
+          <text class="lab glab" x="14" y="34">MODEL · albedo + dynamics</text>
+          <rect class="gbar" x="14" y="40" width="255.8" height="22" fill="#eceef1" />
+          <text class="val glab" x="277" y="56">82%</text>
+          <text class="lab glab" x="14" y="98">MAJORITY-CLASS BASELINE</text>
+          <rect class="gbar" x="14" y="104" width="224.6" height="22" fill="#44484f" style="transition-delay:.12s" />
+          <text class="val glab" x="246" y="120">72%</text>
+        </svg>
+        <p class="cap">Beating the &ldquo;always guess the commonest class&rdquo; baseline by 10 points is the bar a real classifier has to clear. This clears it.</p>
+      </div>
+
+      <!-- 2. confusion matrix -->
+      <div class="chart">
+        <h3>Confusion matrix</h3>
+        <div class="sub">rows = truth · columns = prediction</div>
+        <svg viewBox="0 0 340 190" aria-label="Confusion matrix">
+          <text class="axt glab" x="170" y="12" text-anchor="middle">PREDICTED</text>
+          <text class="axt glab" x="116" y="30" text-anchor="middle">C</text>
+          <text class="axt glab" x="186" y="30" text-anchor="middle">S</text>
+          <text class="axt glab" x="256" y="30" text-anchor="middle">M</text>
+          <text class="axt glab" x="46" y="62" text-anchor="middle">C</text>
+          <text class="axt glab" x="46" y="110" text-anchor="middle">S</text>
+          <text class="axt glab" x="46" y="158" text-anchor="middle">M</text>
+          <!-- row C: 18,11,0 -->
+          <rect class="gcell" x="82" y="38" width="68" height="44" fill="#eceef1" fill-opacity="0.32" />
+          <text class="val glab" x="116" y="65" text-anchor="middle">18</text>
+          <rect class="gcell" x="152" y="38" width="68" height="44" fill="#eceef1" fill-opacity="0.23" style="transition-delay:.05s" />
+          <text class="val glab" x="186" y="65" text-anchor="middle">11</text>
+          <rect class="gcell" x="222" y="38" width="68" height="44" fill="#eceef1" fill-opacity="0.05" style="transition-delay:.1s" />
+          <text class="lab glab" x="256" y="65" text-anchor="middle">0</text>
+          <!-- row S: 6,77,0 -->
+          <rect class="gcell" x="82" y="86" width="68" height="44" fill="#eceef1" fill-opacity="0.17" style="transition-delay:.05s" />
+          <text class="val glab" x="116" y="113" text-anchor="middle">6</text>
+          <rect class="gcell" x="152" y="86" width="68" height="44" fill="#eceef1" fill-opacity="0.97" style="transition-delay:.1s" />
+          <text class="val glab" x="186" y="113" text-anchor="middle" fill="#080809">77</text>
+          <rect class="gcell" x="222" y="86" width="68" height="44" fill="#eceef1" fill-opacity="0.05" style="transition-delay:.15s" />
+          <text class="lab glab" x="256" y="113" text-anchor="middle">0</text>
+          <!-- row M: 3,1,0 -->
+          <rect class="gcell" x="82" y="134" width="68" height="44" fill="#eceef1" fill-opacity="0.13" style="transition-delay:.1s" />
+          <text class="val glab" x="116" y="161" text-anchor="middle">3</text>
+          <rect class="gcell" x="152" y="134" width="68" height="44" fill="#eceef1" fill-opacity="0.09" style="transition-delay:.15s" />
+          <text class="val glab" x="186" y="161" text-anchor="middle">1</text>
+          <rect class="gcell" x="222" y="134" width="68" height="44" fill="#eceef1" fill-opacity="0.05" style="transition-delay:.2s" />
+          <text class="lab glab" x="256" y="161" text-anchor="middle">0</text>
+        </svg>
+        <p class="cap">Recall by class: stony <b style="color:#fff">93%</b>, carbonaceous <b style="color:#fff">62%</b>, metallic <b style="color:#fff">0%</b>. Metallic is genuinely unlearnable from albedo alone, so the model is told to flag it as a weak prior, not a finding.</p>
+      </div>
+
+      <!-- 3. confidence calibration -->
+      <div class="chart">
+        <h3>Confidence is calibrated</h3>
+        <div class="sub">observed accuracy by confidence band</div>
+        <svg viewBox="0 0 340 180" aria-label="Confidence calibration">
+          <line class="ax" x1="44" y1="20" x2="44" y2="150" />
+          <line class="ax" x1="44" y1="150" x2="326" y2="150" />
+          <line class="ax" x1="44" y1="85" x2="326" y2="85" stroke-dasharray="2 4" />
+          <text class="axt glab" x="40" y="24" text-anchor="end">100</text>
+          <text class="axt glab" x="40" y="89" text-anchor="end">50</text>
+          <text class="axt glab" x="40" y="153" text-anchor="end">0</text>
+          <rect class="gcol" x="70" y="62.9" width="56" height="87.1" fill="#5a5e66" />
+          <text class="val glab" x="98" y="54" text-anchor="middle">67%</text>
+          <text class="lab glab" x="98" y="165" text-anchor="middle">&lt; 0.5</text>
+          <text class="axt glab" x="98" y="177" text-anchor="middle">n=12</text>
+          <rect class="gcol" x="150" y="43.4" width="56" height="106.6" fill="#9aa0a8" style="transition-delay:.12s" />
+          <text class="val glab" x="178" y="35" text-anchor="middle">82%</text>
+          <text class="lab glab" x="178" y="165" text-anchor="middle">0.5–0.7</text>
+          <text class="axt glab" x="178" y="177" text-anchor="middle">n=60</text>
+          <rect class="gcol" x="230" y="38" width="56" height="112" fill="#eceef1" style="transition-delay:.24s" />
+          <text class="val glab" x="258" y="30" text-anchor="middle">86%</text>
+          <text class="lab glab" x="258" y="165" text-anchor="middle">≥ 0.7</text>
+          <text class="axt glab" x="258" y="177" text-anchor="middle">n=44</text>
+        </svg>
+        <p class="cap">Higher confidence really does mean higher accuracy. That monotonic climb is what lets a user trust the confidence number instead of treating every guess the same.</p>
+      </div>
+
+      <!-- 4. feature importance -->
+      <div class="chart">
+        <h3>What the model leans on</h3>
+        <div class="sub">random-forest feature importance</div>
+        <svg viewBox="0 0 340 218" aria-label="Feature importance">
+          <text class="lab glab" x="84" y="22" text-anchor="end">albedo</text>
+          <rect class="gbar" x="90" y="13" width="214" height="13" fill="#eceef1" />
+          <text class="val glab" x="308" y="23">.27</text>
+          <text class="lab glab" x="84" y="48" text-anchor="end">abs. magnitude</text>
+          <rect class="gbar" x="90" y="39" width="124.3" height="13" fill="#7e848c" style="transition-delay:.06s" />
+          <text class="val glab" x="220" y="49">.16</text>
+          <text class="lab glab" x="84" y="74" text-anchor="end">inclination</text>
+          <rect class="gbar" x="90" y="65" width="102.6" height="13" fill="#7e848c" style="transition-delay:.12s" />
+          <text class="val glab" x="198" y="75">.13</text>
+          <text class="lab glab" x="84" y="100" text-anchor="end">aphelion</text>
+          <rect class="gbar" x="90" y="91" width="79.4" height="13" fill="#6b7078" style="transition-delay:.18s" />
+          <text class="val glab" x="175" y="101">.10</text>
+          <text class="lab glab" x="84" y="126" text-anchor="end">semi-major axis</text>
+          <rect class="gbar" x="90" y="117" width="76.2" height="13" fill="#6b7078" style="transition-delay:.24s" />
+          <text class="val glab" x="172" y="127">.09</text>
+          <text class="lab glab" x="84" y="152" text-anchor="end">perihelion</text>
+          <rect class="gbar" x="90" y="143" width="74.6" height="13" fill="#6b7078" style="transition-delay:.3s" />
+          <text class="val glab" x="170" y="153">.09</text>
+          <text class="lab glab" x="84" y="178" text-anchor="end">Tisserand</text>
+          <rect class="gbar" x="90" y="169" width="73" height="13" fill="#6b7078" style="transition-delay:.36s" />
+          <text class="val glab" x="169" y="179">.09</text>
+          <text class="lab glab" x="84" y="204" text-anchor="end">eccentricity</text>
+          <rect class="gbar" x="90" y="195" width="58.6" height="13" fill="#54595f" style="transition-delay:.42s" />
+          <text class="val glab" x="154" y="205">.07</text>
+        </svg>
+        <p class="cap">Albedo carries the most signal — dark carbonaceous rock reflects very differently from bright stony rock — with orbital dynamics filling in the rest. Physically sensible, not a black box.</p>
+      </div>
+
+      <!-- 5. population expansion -->
+      <div class="chart wide">
+        <h3>Coverage expanded fivefold</h3>
+        <div class="sub">characterized near-Earth asteroids · measured + predicted</div>
+        <svg viewBox="0 0 720 116" aria-label="Population expansion">
+          <text class="val glab" x="20" y="26" style="font-size:15px">267 measured <tspan fill="#5a5e66">→</tspan> 1,354 characterized <tspan fill="#9296a0" style="font-size:12px">(5.1×)</tspan></text>
+          <rect class="gbar" x="20" y="44" width="134" height="34" fill="#eceef1" />
+          <rect class="gbar" x="154" y="44" width="546" height="34" fill="#41454c" style="transition-delay:.15s" />
+          <text class="axt glab" x="20" y="98">267 MEASURED</text>
+          <text class="axt glab" x="154" y="98">1,087 ML-PREDICTED</text>
+          <text class="axt glab" x="700" y="98" text-anchor="end">1,354 TOTAL</text>
+        </svg>
+        <p class="cap">The model adds 1,087 albedo-only objects to the 267 with a measured spectrum. Median prediction confidence is 0.61, with 185 (17%) at 0.70 or higher — and every predicted label is carried separately from measured truth, never blended into it.</p>
+      </div>
+    </div>
+  </section>
 
   <footer>
     <div class="div"></div>
@@ -221,6 +387,16 @@ const io = new IntersectionObserver((entries)=>{
   entries.forEach(e=>{ if(e.isIntersecting) active = e.target.dataset.model; });
 }, { threshold:0.55 });
 document.querySelectorAll('.step[data-model]').forEach(s=>io.observe(s));
+
+// reveal performance charts on scroll; clear the 3D stage while they're in view
+const cio = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold:0.25 });
+document.querySelectorAll('.chart').forEach(c=>cio.observe(c));
+const pio = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) active=null; });
+}, { threshold:0.15 });
+const perfEl=document.getElementById('perf'); if(perfEl) pio.observe(perfEl);
 
 function loop(){
   if(earth){
