@@ -80,7 +80,9 @@ def _read_ipac(text: str) -> pd.DataFrame:
 
 
 def parse(text_or_path) -> pd.DataFrame:
-    is_path = isinstance(text_or_path, (str, Path)) and Path(str(text_or_path)).exists()
+    # a Path or a short path-like string is a file; a long string is the data itself
+    is_path = isinstance(text_or_path, Path) or (
+        isinstance(text_or_path, str) and len(text_or_path) < 1024 and Path(text_or_path).exists())
     text = Path(text_or_path).read_text() if is_path else str(text_or_path)
     if text.lstrip().startswith("<"):  # VOTable/XML error from IRSA
         raise SystemExit("[neowise] IRSA returned an error:\n" + text.strip()[:700])
