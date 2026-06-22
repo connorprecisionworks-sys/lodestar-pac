@@ -404,11 +404,13 @@ function addModel(name, file){
 // --- composition overlay: colored "glass" mineral blobs + projected callouts ---
 // Illustrative mineral mix (colors from the app's material palette). dir = where
 // on the rock the blob sits (roughly camera-facing so it reads).
+// dir = a point on the camera-facing (+z) hemisphere so every blob reads as a
+// deposit sitting ON the visible rock face, not floating beside it.
 const MINERALS = [
-  { label:'Water ice',      sub:'volatile · ~10%', color:0x5ad1e6, dir:[ 0.62, 0.55, 0.60] },
-  { label:'Silicates',      sub:'silicate · ~40%', color:0xc9a36b, dir:[-0.66, 0.10, 0.74] },
-  { label:'Iron-nickel',    sub:'metal · ~2%',     color:0x9aa0a6, dir:[ 0.40,-0.58, 0.70] },
-  { label:'Platinum-group', sub:'precious · trace',color:0xf3c64a, dir:[-0.30, 0.66, 0.69] },
+  { label:'Water ice',      sub:'volatile · ~10%', color:0x5ad1e6, dir:[ 0.30, 0.46, 0.84] },
+  { label:'Silicates',      sub:'silicate · ~40%', color:0xc9a36b, dir:[-0.42, 0.02, 0.91] },
+  { label:'Iron-nickel',    sub:'metal · ~2%',     color:0x9aa0a6, dir:[ 0.10,-0.52, 0.85] },
+  { label:'Platinum-group', sub:'precious · trace',color:0xf3c64a, dir:[ 0.50, 0.34, 0.80] },
 ];
 const compoMarkers = [];
 const linesSvg = document.getElementById('compo-lines');
@@ -417,12 +419,13 @@ function buildCompo(grp){
   for(const m of MINERALS){
     const d=new THREE.Vector3(...m.dir).normalize();
     const blob=new THREE.Mesh(
-      new THREE.IcosahedronGeometry(0.17,0),
-      new THREE.MeshStandardMaterial({ color:m.color, transparent:true, opacity:0, roughness:0.12, metalness:0, emissive:m.color, emissiveIntensity:0.35, depthWrite:false })
+      new THREE.IcosahedronGeometry(0.12,0),
+      new THREE.MeshStandardMaterial({ color:m.color, transparent:true, opacity:0, roughness:0.12, metalness:0, emissive:m.color, emissiveIntensity:0.4, depthWrite:false })
     );
-    blob.position.copy(d.multiplyScalar(R_AST*1.02));
+    blob.position.copy(d.multiplyScalar(R_AST*1.04)); // proud of the surface, flush-looking
+    blob.scale.set(1,1,0.5); blob.lookAt(d.clone().multiplyScalar(3)); // flatten onto the face
     const wire=new THREE.Mesh(blob.geometry, new THREE.MeshBasicMaterial({ color:m.color, wireframe:true, transparent:true, opacity:0 }));
-    wire.scale.setScalar(1.08); blob.add(wire);
+    blob.add(wire); // tight facet outline, same size
     grp.add(blob);
     // HTML callout + leader line
     const el=document.createElement('div'); el.className='cocall';
@@ -491,7 +494,8 @@ function loop(){
     grp.children[0].traverse(m=>{ if(m.isMesh) m.material.opacity=e; });
     grp.position.x = REST.x + (1-e)*1.2; // fly in from the right, settle, fly back out
     grp.position.y = REST.y; grp.position.z = REST.z;
-    if(name===active){ grp.userData.rot += (activeRot-grp.userData.rot)*0.06; grp.rotation.y = grp.userData.rot; }
+    if(name===active){ grp.userData.rot += (activeRot-grp.userData.rot)*0.06; }
+    grp.children[0].rotation.y = grp.userData.rot; // spin only the rock; markers stay on the face
     grp.visible = e>0.01;
     if(name==='compo') updateCompoCallouts(e);
   }
