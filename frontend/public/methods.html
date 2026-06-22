@@ -79,6 +79,15 @@
   .axt{font-family:var(--mono);font-size:9px;fill:var(--faint)}
   .lab{font-family:var(--mono);font-size:10px;fill:var(--muted)}
   .val{font-family:var(--mono);font-size:11px;fill:var(--ink)}
+
+  /* composition callouts (section 03) */
+  #compo-lines{position:fixed;inset:0;width:100vw;height:100vh;z-index:2;pointer-events:none}
+  #compo-callouts{position:fixed;inset:0;z-index:2;pointer-events:none}
+  .cocall{position:absolute;transform:translate(-100%,-50%);text-align:right;white-space:nowrap;opacity:0;
+    font-family:var(--mono);will-change:left,top,opacity}
+  .cocall .cl{color:#fff;font-size:12px;letter-spacing:.02em}
+  .cocall .cs{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.16em;margin-top:1px}
+  .cocall .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:8px;vertical-align:middle;box-shadow:0 0 8px currentColor}
 </style>
 </head>
 <body>
@@ -87,6 +96,8 @@
     <a href="/">← Console</a>
   </div>
   <canvas id="scene"></canvas>
+  <svg id="compo-lines" xmlns="http://www.w3.org/2000/svg"></svg>
+  <div id="compo-callouts"></div>
 
   <div class="story">
     <section class="step hero">
@@ -118,24 +129,9 @@
       </div>
     </section>
 
-    <section class="step" data-model="hd2" data-rot="0.9">
+    <section class="step" data-model="hd3" data-rot="0.9">
       <div class="block">
-        <div class="num">02 — Machine characterization</div>
-        <h2>Predicting composition from reflectivity.</h2>
-        <p>A class-balanced model infers an asteroid's compositional class and a calibrated confidence from albedo and dynamics. It reaches <b>82% accuracy</b> against a 72% baseline and expands the characterized population fivefold to <b>1,354</b> — every prediction tagged, never disguised as a measurement.</p>
-        <div class="card">
-          <div class="cn">4179 Toutatis <span class="pill">S</span></div>
-          <div class="cr"><span>Composition</span><b>stony · ML-predicted</b></div>
-          <div class="cr"><span>Est. value</span><b>$75.7 T</b></div>
-          <div class="cr"><span>Δv to rendezvous</span><b>6.59 km/s</b></div>
-          <div class="cr"><span>Provenance</span><b>ml-predicted</b></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="step" data-model="hd3" data-rot="1.8">
-      <div class="block">
-        <div class="num">03 — Launch windows</div>
+        <div class="num">02 — Launch windows</div>
         <h2>Real trajectories, validated.</h2>
         <p>A universal-variable Lambert solver and a porkchop sweep find the minimum-Δv launch window for any target. It recovers asteroid Eros's optimal Δv at <b>6.10 km/s</b> against the published Benner value of <b>6.11</b> — screening-grade, but genuinely correct.</p>
         <div class="card">
@@ -144,6 +140,21 @@
           <div class="cr"><span>Est. value</span><b>$8.1 T</b></div>
           <div class="cr"><span>Δv to rendezvous</span><b>6.75 km/s</b></div>
           <div class="cr"><span>Provenance</span><b>measured</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" data-model="compo" data-rot="1.8" data-compo="1">
+      <div class="block">
+        <div class="num">03 — Machine characterization</div>
+        <h2>Predicting composition from reflectivity.</h2>
+        <p>A class-balanced model infers an asteroid's compositional class and a calibrated confidence from albedo and dynamics. It reaches <b>82% accuracy</b> against a 72% baseline and expands the characterized population fivefold to <b>1,354</b> — every prediction tagged, never disguised as a measurement.</p>
+        <div class="card">
+          <div class="cn">4179 Toutatis <span class="pill">S</span></div>
+          <div class="cr"><span>Composition</span><b>stony · ML-predicted</b></div>
+          <div class="cr"><span>Est. value</span><b>$75.7 T</b></div>
+          <div class="cr"><span>Δv to rendezvous</span><b>6.59 km/s</b></div>
+          <div class="cr"><span>Provenance</span><b>ml-predicted</b></div>
         </div>
       </div>
     </section>
@@ -368,23 +379,85 @@ loader.load('/brand/earth.glb', g=>{
 }, undefined, ()=>{ earth=fallbackEarth(); scene.add(earth); });
 
 // asteroid models, shown per active scroll step (opacity fade).
-// Each step names a model (hd / hd2 / hd3) so adjacent steps never repeat; if a
-// file is missing we fall back to the first one that did load, never blank.
-const REST = { x:1.95, y:0.0, z:1.4 }; // parked position, fully on-screen right
+// Each step names a model so adjacent steps never repeat; if a file is missing
+// we fall back to the first one that did load, never blank. Bounding-SPHERE
+// centering keeps every rock the same on-screen size + position regardless of shape.
+const REST = { x:1.6, y:-0.1, z:1.1 }; // parked position, fully on-screen right
+const R_AST = 0.85; // target visual radius (world units)
 const ASTEROIDS = ['hd','hd2','hd3'];
 const models = {}; const loadedOrder = [];
 let active = null, activeRot = 0;
-for(const name of ASTEROIDS){
-  loader.load(`/models/asteroid_${name}.glb`, g=>{
-    const o=g.scene; const box=new THREE.Box3().setFromObject(o); const s=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
-    o.position.sub(c); o.scale.setScalar(1.7/Math.max(s.x,s.y,s.z));
-    o.traverse(m=>{ if(m.isMesh && m.material){ m.material.transparent=true; m.material.opacity=0; m.material.metalness=0; m.material.roughness=1; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
+function fitModel(o){
+  const box=new THREE.Box3().setFromObject(o); const sph=new THREE.Sphere(); box.getBoundingSphere(sph);
+  o.position.sub(sph.center); o.scale.setScalar(R_AST/(sph.radius||1));
+  o.traverse(m=>{ if(m.isMesh && m.material){ m.material.transparent=true; m.material.opacity=0; m.material.metalness=0; m.material.roughness=1; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
+}
+function addModel(name, file){
+  loader.load(`/models/asteroid_${file}.glb`, g=>{
+    const o=g.scene; fitModel(o);
     const grp=new THREE.Group(); grp.add(o); grp.position.set(REST.x,REST.y,REST.z); grp.userData.t=0; grp.userData.rot=0;
     scene.add(grp); models[name]=grp; loadedOrder.push(name);
-  }, undefined, ()=>{ /* file not present yet — skip, fallback handles it */ });
+    if(name==='compo') buildCompo(grp);
+  }, undefined, ()=>{ /* file absent — fallback handles it */ });
 }
+
+// --- composition overlay: colored "glass" mineral blobs + projected callouts ---
+// Illustrative mineral mix (colors from the app's material palette). dir = where
+// on the rock the blob sits (roughly camera-facing so it reads).
+const MINERALS = [
+  { label:'Water ice',      sub:'volatile · ~10%', color:0x5ad1e6, dir:[ 0.62, 0.55, 0.60] },
+  { label:'Silicates',      sub:'silicate · ~40%', color:0xc9a36b, dir:[-0.66, 0.10, 0.74] },
+  { label:'Iron-nickel',    sub:'metal · ~2%',     color:0x9aa0a6, dir:[ 0.40,-0.58, 0.70] },
+  { label:'Platinum-group', sub:'precious · trace',color:0xf3c64a, dir:[-0.30, 0.66, 0.69] },
+];
+const compoMarkers = [];
+const linesSvg = document.getElementById('compo-lines');
+const calloutBox = document.getElementById('compo-callouts');
+function buildCompo(grp){
+  for(const m of MINERALS){
+    const d=new THREE.Vector3(...m.dir).normalize();
+    const blob=new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.17,0),
+      new THREE.MeshStandardMaterial({ color:m.color, transparent:true, opacity:0, roughness:0.12, metalness:0, emissive:m.color, emissiveIntensity:0.35, depthWrite:false })
+    );
+    blob.position.copy(d.multiplyScalar(R_AST*1.02));
+    const wire=new THREE.Mesh(blob.geometry, new THREE.MeshBasicMaterial({ color:m.color, wireframe:true, transparent:true, opacity:0 }));
+    wire.scale.setScalar(1.08); blob.add(wire);
+    grp.add(blob);
+    // HTML callout + leader line
+    const el=document.createElement('div'); el.className='cocall';
+    el.innerHTML=`<span class="cl">${m.label}</span><span class="cdot" style="background:#${m.color.toString(16).padStart(6,'0')};color:#${m.color.toString(16).padStart(6,'0')}"></span><span class="cs">${m.sub}</span>`;
+    calloutBox.appendChild(el);
+    const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+    ln.setAttribute('stroke', `#${m.color.toString(16).padStart(6,'0')}`); ln.setAttribute('stroke-width','1'); ln.setAttribute('opacity','0');
+    linesSvg.appendChild(ln);
+    compoMarkers.push({ blob, wire, el, ln, mat:blob.material, wmat:wire.material });
+  }
+}
+addModel('hd','hd'); addModel('hd2','hd2'); addModel('hd3','hd3');
+addModel('compo','hd2'); // dedicated instance so its overlays are unique to step 03
+
 // resolve the model a step should show, falling back if its file is absent
 const resolve = (name)=> models[name] ? name : (loadedOrder[0] || null);
+
+// project a world point to screen px; returns null if behind the camera
+const _v = new THREE.Vector3();
+function projectToScreen(obj){
+  obj.getWorldPosition(_v); _v.project(camera);
+  if(_v.z>1) return null;
+  return { x:(_v.x*0.5+0.5)*innerWidth, y:(-_v.y*0.5+0.5)*innerHeight };
+}
+function updateCompoCallouts(show){
+  for(const mk of compoMarkers){
+    mk.mat.opacity = show*0.55; mk.wmat.opacity = show*0.7;
+    const p = show>0.05 ? projectToScreen(mk.blob) : null;
+    if(!p){ mk.el.style.opacity=0; mk.ln.setAttribute('opacity',0); continue; }
+    const lx = p.x - 16; // label sits to the left of the blob
+    mk.el.style.left = lx+'px'; mk.el.style.top = p.y+'px'; mk.el.style.opacity = show;
+    mk.ln.setAttribute('x1', p.x); mk.ln.setAttribute('y1', p.y);
+    mk.ln.setAttribute('x2', lx); mk.ln.setAttribute('y2', p.y); mk.ln.setAttribute('opacity', show*0.6);
+  }
+}
 
 // scroll → progress; IntersectionObserver → active asteroid + its orientation
 let progress=0;
@@ -416,10 +489,11 @@ function loop(){
     grp.userData.t += (want-grp.userData.t)*0.09;
     const t=grp.userData.t, e=t*t*(3-2*t); // smoothstep ease
     grp.children[0].traverse(m=>{ if(m.isMesh) m.material.opacity=e; });
-    grp.position.x = REST.x + (1-e)*1.4; // fly in from the right, settle, fly back out
+    grp.position.x = REST.x + (1-e)*1.2; // fly in from the right, settle, fly back out
     grp.position.y = REST.y; grp.position.z = REST.z;
     if(name===active){ grp.userData.rot += (activeRot-grp.userData.rot)*0.06; grp.rotation.y = grp.userData.rot; }
     grp.visible = e>0.01;
+    if(name==='compo') updateCompoCallouts(e);
   }
   renderer.render(scene,camera);
   requestAnimationFrame(loop);
