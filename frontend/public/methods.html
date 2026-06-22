@@ -103,7 +103,7 @@
       <div class="scrollcue">scroll ↓</div>
     </section>
 
-    <section class="step" data-model="hd">
+    <section class="step" data-model="hd" data-rot="0">
       <div class="block">
         <div class="num">01 — The gap</div>
         <h2>Only 267 of 41,884 have a measured composition.</h2>
@@ -118,7 +118,7 @@
       </div>
     </section>
 
-    <section class="step" data-model="hd2">
+    <section class="step" data-model="hd2" data-rot="0.9">
       <div class="block">
         <div class="num">02 — Machine characterization</div>
         <h2>Predicting composition from reflectivity.</h2>
@@ -133,7 +133,7 @@
       </div>
     </section>
 
-    <section class="step" data-model="hd">
+    <section class="step" data-model="hd3" data-rot="1.8">
       <div class="block">
         <div class="num">03 — Launch windows</div>
         <h2>Real trajectories, validated.</h2>
@@ -148,7 +148,7 @@
       </div>
     </section>
 
-    <section class="step" data-model="hd2">
+    <section class="step" data-model="hd" data-rot="2.7">
       <div class="block">
         <div class="num">04 — Value from composition</div>
         <h2>Worth, built from what's actually there.</h2>
@@ -163,7 +163,7 @@
       </div>
     </section>
 
-    <section class="step" data-model="hd">
+    <section class="step" data-model="hd2" data-rot="3.6">
       <div class="block">
         <div class="num">05 — The fence</div>
         <h2>Honest by construction.</h2>
@@ -367,24 +367,30 @@ loader.load('/brand/earth.glb', g=>{
   const wrap=new THREE.Group(); wrap.add(o); scene.add(wrap); earth=wrap;
 }, undefined, ()=>{ earth=fallbackEarth(); scene.add(earth); });
 
-// asteroid models, shown per active scroll step (opacity fade)
-const ASTEROIDS = ['hd','hd2'];
-const models = {}; let active = null;
+// asteroid models, shown per active scroll step (opacity fade).
+// Each step names a model (hd / hd2 / hd3) so adjacent steps never repeat; if a
+// file is missing we fall back to the first one that did load, never blank.
+const REST = { x:1.95, y:0.0, z:1.4 }; // parked position, fully on-screen right
+const ASTEROIDS = ['hd','hd2','hd3'];
+const models = {}; const loadedOrder = [];
+let active = null, activeRot = 0;
 for(const name of ASTEROIDS){
   loader.load(`/models/asteroid_${name}.glb`, g=>{
     const o=g.scene; const box=new THREE.Box3().setFromObject(o); const s=box.getSize(new THREE.Vector3()); const c=box.getCenter(new THREE.Vector3());
-    o.position.sub(c); o.scale.setScalar(1.85/Math.max(s.x,s.y,s.z));
+    o.position.sub(c); o.scale.setScalar(1.7/Math.max(s.x,s.y,s.z));
     o.traverse(m=>{ if(m.isMesh && m.material){ m.material.transparent=true; m.material.opacity=0; m.material.metalness=0; m.material.roughness=1; if(m.material.map) m.material.map.colorSpace=THREE.SRGBColorSpace; }});
-    const grp=new THREE.Group(); grp.add(o); grp.position.set(2.7,-0.1,2.2); grp.userData.t=0;
-    scene.add(grp); models[name]=grp;
-  });
+    const grp=new THREE.Group(); grp.add(o); grp.position.set(REST.x,REST.y,REST.z); grp.userData.t=0; grp.userData.rot=0;
+    scene.add(grp); models[name]=grp; loadedOrder.push(name);
+  }, undefined, ()=>{ /* file not present yet — skip, fallback handles it */ });
 }
+// resolve the model a step should show, falling back if its file is absent
+const resolve = (name)=> models[name] ? name : (loadedOrder[0] || null);
 
-// scroll → progress; IntersectionObserver → active asteroid
+// scroll → progress; IntersectionObserver → active asteroid + its orientation
 let progress=0;
 addEventListener('scroll', ()=>{ progress = scrollY/Math.max(1,(document.body.scrollHeight-innerHeight)); });
 const io = new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{ if(e.isIntersecting) active = e.target.dataset.model; });
+  entries.forEach(e=>{ if(e.isIntersecting){ active = resolve(e.target.dataset.model); activeRot = parseFloat(e.target.dataset.rot||'0'); } });
 }, { threshold:0.55 });
 document.querySelectorAll('.step[data-model]').forEach(s=>io.observe(s));
 
@@ -410,7 +416,9 @@ function loop(){
     grp.userData.t += (want-grp.userData.t)*0.09;
     const t=grp.userData.t, e=t*t*(3-2*t); // smoothstep ease
     grp.children[0].traverse(m=>{ if(m.isMesh) m.material.opacity=e; });
-    grp.position.x = 2.7 + (1-e)*1.6; // fly in from the right, settle, fly back out
+    grp.position.x = REST.x + (1-e)*1.4; // fly in from the right, settle, fly back out
+    grp.position.y = REST.y; grp.position.z = REST.z;
+    if(name===active){ grp.userData.rot += (activeRot-grp.userData.rot)*0.06; grp.rotation.y = grp.userData.rot; }
     grp.visible = e>0.01;
   }
   renderer.render(scene,camera);
