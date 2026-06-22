@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from urllib.parse import quote
 
 import pandas as pd
 
@@ -98,12 +99,37 @@ def parse(text_or_path) -> pd.DataFrame:
     return out
 
 
+def list_catalogs() -> None:
+    """Ask IRSA what the NEOWISE small-body catalogue is actually called, both in
+    the TAP service and in Gator. Run with --list, then paste me the output."""
+    kw = ("neowise", "albedo", "diam", "sbprop", "small")
+    print("=== IRSA TAP tables ===")
+    try:
+        tap = _download("https://irsa.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv"
+                        "&QUERY=" + quote("SELECT table_name FROM TAP_SCHEMA.tables"))
+        hits = [l for l in tap.splitlines() if any(k in l.lower() for k in kw)]
+        print("\n".join(hits) or "(no matching TAP tables)")
+    except Exception as ex:  # noqa: BLE001
+        print(f"(TAP list failed: {str(ex)[:80]})")
+    print("\n=== Gator catalogues ===")
+    try:
+        scan = _download("https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-scan?mode=ascii")
+        hits = [l for l in scan.splitlines() if any(k in l.lower() for k in kw)]
+        print("\n".join(hits[:40]) or "(no matching Gator catalogues)")
+    except Exception as ex:  # noqa: BLE001
+        print(f"(Gator scan failed: {str(ex)[:80]})")
+
+
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Ingest NEOWISE diameters + albedos via IRSA TAP.")
+    ap = argparse.ArgumentParser(description="Ingest NEOWISE diameters + albedos via IRSA.")
+    ap.add_argument("--list", action="store_true", help="discover the real IRSA catalogue name")
     ap.add_argument("--url", default=SOURCE_URL)
-    ap.add_argument("--file", type=Path, default=None, help="local CSV instead of querying IRSA")
+    ap.add_argument("--file", type=Path, default=None, help="local table instead of querying IRSA")
     ap.add_argument("--out", type=Path, default=RAW_PATH)
     args = ap.parse_args()
+    if args.list:
+        list_catalogs()
+        return
 
     src = args.file if args.file else _download(args.url)
     df = parse(src)
