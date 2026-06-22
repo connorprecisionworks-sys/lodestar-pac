@@ -35,6 +35,9 @@ def _load(p: Path) -> pd.DataFrame | None:
 
 def run(store: Path = STORE) -> pd.DataFrame:
     df = pd.read_parquet(store)
+    # idempotent: drop any external columns from a previous run so re-merging
+    # never collides into _x/_y suffixes
+    df = df.drop(columns=[c for c in NEW_FEATURES if c in df.columns])
     n = len(df)
     before_albedo = int(df["albedo"].notna().sum())
     before_spec = int(df["spec_source"].ne("none").sum()) if "spec_source" in df else 0

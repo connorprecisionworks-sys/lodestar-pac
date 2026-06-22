@@ -31,7 +31,8 @@ from backend.ingest.schema import desig_key
 # IRSA TAP. Catalogue table is `neowisesbprop` (see the IRSA column-definitions page).
 ADQL = ("SELECT asteroid_number,prov_desig,v_albedo,ir_albedo,diameter,beaming_param "
         "FROM neowisesbprop")
-SOURCE_URL = "https://irsa.ipac.caltech.edu/TAP/sync?FORMAT=csv&QUERY=" + quote(ADQL)
+SOURCE_URL = ("https://irsa.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY="
+              + quote(ADQL))
 RAW_PATH = Path("data/raw/neowise.parquet")
 
 
@@ -61,10 +62,12 @@ def _key(row) -> str | None:
 
 
 def parse(text_or_path) -> pd.DataFrame:
-    if isinstance(text_or_path, (str, Path)) and Path(str(text_or_path)).exists():
-        raw = pd.read_csv(text_or_path, comment="#", low_memory=False)
-    else:
-        raw = pd.read_csv(io.StringIO(text_or_path), comment="#", low_memory=False)
+    is_path = isinstance(text_or_path, (str, Path)) and Path(str(text_or_path)).exists()
+    text = Path(text_or_path).read_text() if is_path else str(text_or_path)
+    if text.lstrip().startswith("<"):  # IRSA returned a VOTable/XML error, not CSV
+        raise SystemExit("[neowise] IRSA returned an error instead of CSV. Server said:\n"
+                         + text.strip()[:700] + "\n\nPaste that to me and I will fix the query.")
+    raw = pd.read_csv(io.StringIO(text), comment="#", low_memory=False)
     raw.columns = [c.lower() for c in raw.columns]
     if "v_albedo" not in raw.columns:
         raise SystemExit(f"[neowise] unexpected columns {list(raw.columns)[:12]} ... "
