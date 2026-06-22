@@ -89,17 +89,26 @@ def parse(text_or_path) -> pd.DataFrame:
     else:  # TAP CSV
         raw = pd.read_csv(io.StringIO(text), comment="#", low_memory=False)
     raw.columns = [c.lower() for c in raw.columns]
-    raw = raw.replace({"null": None, "": None})
     if "v_albedo" not in raw.columns:
         raise SystemExit(f"[neowise] unexpected columns {list(raw.columns)[:12]} ... send me this list")
-    out = pd.DataFrame()
-    out["desig_key"] = raw.apply(_key, axis=1)
-    out["pv_neowise"] = pd.to_numeric(raw["v_albedo"], errors="coerce")
-    out["ir_albedo"] = pd.to_numeric(raw.get("ir_albedo"), errors="coerce")
-    out["diameter_neowise_km"] = pd.to_numeric(raw.get("diameter"), errors="coerce")
+    num = pd.to_numeric(raw.get("asteroid_number"), errors="coerce")
+    des = raw["prov_desig"].astype("string") if "prov_desig" in raw.columns else pd.Series([pd.NA] * len(raw))
+    keys = []
+    for n, d in zip(num.tolist(), des.tolist()):
+        if pd.notna(n):
+            keys.append(f"n:{int(n)}")
+        elif isinstance(d, str) and d.strip() and d.strip().lower() != "nan":
+            keys.append(desig_key(d.strip()))
+        else:
+            keys.append(None)
+    out = pd.DataFrame({
+        "desig_key": keys,
+        "pv_neowise": pd.to_numeric(raw["v_albedo"], errors="coerce").to_numpy(),
+        "ir_albedo": pd.to_numeric(raw.get("ir_albedo"), errors="coerce").to_numpy(),
+        "diameter_neowise_km": pd.to_numeric(raw.get("diameter"), errors="coerce").to_numpy(),
+    })
     out = out.dropna(subset=["desig_key", "pv_neowise"])
     out = out[out["pv_neowise"] > 0]
-    # one row per object: median across apparitions
     out = out.groupby("desig_key", as_index=False).median(numeric_only=True)
     out["nir_v_ratio"] = (out["ir_albedo"] / out["pv_neowise"]).where(out["pv_neowise"] > 0)
     return out
@@ -138,7 +147,12 @@ def main() -> None:
         return
 
     src = args.file if args.file else _download(args.url)
-    df = parse(src)
+    try:
+        df = parse(src)
+    except SystemExit:
+        raise
+    except Exception as ex:  # noqa: BLE001 - keep the failure to one clean line
+        raise SystemExit(f"[neowise] parse failed: {type(ex).__name__}: {str(ex)[:300]}")
     args.out.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(args.out, index=False)
     print(f"[neowise] wrote {args.out}: {len(df)} objects with albedo "
