@@ -76,6 +76,9 @@
   #ov-term .term-bar{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:6px}
   #ov-term .term-bar i{width:8px;height:8px;border-radius:50%;background:var(--line2);display:inline-block}
   #ov-term pre{margin:0;padding:14px 16px;font-family:var(--mono);font-size:12.5px;line-height:1.85;color:#c8ccd2;white-space:pre-wrap;min-height:300px}
+  #ov-term .okln{color:#6fce97}
+  #ov-term .cur{color:#6fce97;opacity:.85}
+  #reticle{display:none}
   #reticle{position:fixed;z-index:2;width:46px;height:46px;margin:-23px 0 0 -23px;pointer-events:none;opacity:0;mix-blend-mode:screen}
   #reticle::before,#reticle::after{content:"";position:absolute;background:#9fd0ff;opacity:.9}
   #reticle::before{left:50%;top:0;width:1px;height:100%;margin-left:-.5px}
@@ -515,12 +518,10 @@ const tArc=new THREE.Line(new THREE.BufferGeometry().setFromPoints(tPts), new TH
 tArc.geometry.setDrawRange(0,0); trajGrp.add(tArc);
 const tProbe=new THREE.Mesh(new THREE.SphereGeometry(0.055,16,16), new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0 })); trajGrp.add(tProbe);
 
-// ---- 03 SCAN: asteroid + sweep ring ----
-const scanGrp=new THREE.Group(); scanGrp.position.set(1.7,-0.1,0.8); scanGrp.visible=false; scene.add(scanGrp);
+// ---- 03 SCAN: calm asteroid backdrop, the terminal does the work ----
+const scanGrp=new THREE.Group(); scanGrp.position.set(1.85,-0.1,0.4); scanGrp.visible=false; scene.add(scanGrp);
 let scanModel=null;
-loader.load('/models/asteroid_hd.glb', g=>{ const o=g.scene; fitModel(o,0.95); o.traverse(m=>{ if(m.isMesh&&m.material) m.material.opacity=0; }); scanGrp.add(o); scanModel=o; }, undefined, ()=>{});
-const scanRing=new THREE.Mesh(new THREE.TorusGeometry(1.0,0.012,8,72), new THREE.MeshBasicMaterial({ color:0x9fd0ff, transparent:true, opacity:0 }));
-scanRing.rotation.x=Math.PI/2; scanGrp.add(scanRing);
+loader.load('/models/asteroid_hd.glb', g=>{ const o=g.scene; fitModel(o,0.8); o.traverse(m=>{ if(m.isMesh&&m.material) m.material.opacity=0; }); scanGrp.add(o); scanModel=o; }, undefined, ()=>{});
 
 // ===== overlay refs =====
 const ov = id => document.getElementById(id);
@@ -529,17 +530,19 @@ const statPct=ov('stat-pct'), statSub=ov('stat-sub'), statNote=ov('stat-note');
 const calcEls=[...document.querySelectorAll('#ov-calc .calc')];
 const termBody=ov('term-body');
 const TERM=[
- '> lodestar characterize 4179',
- '  loading albedo + dynamics ...',
- '  albedo        0.21',
- '  H_mag         15.3',
- '  inclination   0.47 rad',
- '  Tisserand     3.08',
- '  perihelion    0.92 AU',
- '  aphelion      4.10 AU',
- '  > random_forest.predict_proba()',
- '    P(C)=0.06   P(S)=0.88   P(M)=0.06',
- '  => CLASS S   confidence 0.88',
+ {t:'> lodestar characterize 4179'},
+ {t:'  connecting JPL SBDB ........ ok', ok:1},
+ {t:'  albedo        0.21'},
+ {t:'  H_mag         15.3'},
+ {t:'  inclination   0.47 rad'},
+ {t:'  Tisserand     3.08'},
+ {t:'  perihelion    0.92 AU'},
+ {t:'  aphelion      4.10 AU'},
+ {t:'  features loaded ........... ok', ok:1},
+ {t:'  > random_forest.predict_proba()'},
+ {t:'    P(C)=0.06   P(S)=0.88   P(M)=0.06'},
+ {t:'  => CLASS S · confidence 0.88', ok:1},
+ {t:'  characterization complete ✓', ok:1},
 ];
 const WORTH=[
  { v:'wv1', b:'wb1', target:83000, stag:0.05, full:100, fmt:x=>Math.round(x).toLocaleString()+' t' },
@@ -601,21 +604,14 @@ function updTraj(p,o){ trajGrp.visible=o>0.01; if(!trajGrp.visible) return;
   tProbe.position.copy(pt); tProbe.material.opacity=o*(draw>2&&draw<T_SEG?1:0);
   for(const el of calcEls){ const at=parseFloat(el.dataset.at); el.classList.toggle('show', o>0.4 && p>=at); } }
 
-function updScan(p,o,t){ scanGrp.visible=o>0.01; if(!scanGrp.visible){ if(reticle) reticle.style.opacity=0; return; }
-  if(scanModel){ scanModel.traverse(m=>{ if(m.isMesh&&m.material) m.material.opacity=o; }); scanModel.rotation.y = t*0.00018; }
-  const y=Math.sin(t*0.0016)*0.85; scanRing.position.y=y; const s=Math.sqrt(Math.max(0.04,1-(y/0.95)**2));
-  scanRing.scale.set(s,s,s); scanRing.material.opacity=o*0.55;
-  // streaming terminal
-  const lines=Math.floor(clamp01((p-0.08)/0.8)*TERM.length*1.1);
-  let txt=TERM.slice(0, Math.min(TERM.length, Math.max(0,lines))).join('\n');
-  if(lines<TERM.length && (t%900)<450) txt+='\n_';
-  if(termBody) termBody.textContent=txt;
-  // reticle orbit around the rock's screen position
-  if(reticle){ scanGrp.getWorldPosition(_v); _v.project(camera);
-    const cx=(_v.x*0.5+0.5)*innerWidth, cy=(-_v.y*0.5+0.5)*innerHeight;
-    const rad=110+24*Math.sin(t*0.003), ang=t*0.0016;
-    reticle.style.left=(cx+Math.cos(ang)*rad)+'px'; reticle.style.top=(cy+Math.sin(ang)*rad*0.78)+'px';
-    reticle.style.opacity=o*0.9; } }
+function updScan(p,o,t){ scanGrp.visible=o>0.01; if(!scanGrp.visible) return;
+  if(scanModel){ scanModel.traverse(m=>{ if(m.isMesh&&m.material) m.material.opacity=o*0.85; }); scanModel.rotation.y = t*0.00011; }
+  // streaming terminal with green success lines
+  const n=Math.round(clamp01((p-0.06)/0.82)*TERM.length);
+  const shown=TERM.slice(0, Math.max(0, Math.min(TERM.length, n)));
+  let html=shown.map(l=> l.ok ? `<span class="okln">${l.t}</span>` : l.t).join('\n');
+  if(n<TERM.length && (t%1000)<540) html+='\n<span class="cur">_</span>';
+  if(termBody) termBody.innerHTML=html; }
 
 function updWorth(p){ for(const w of WORTH){ const fr=smooth01((p-w.stag)/0.55);
   const ve=ov(w.v); if(ve) ve.textContent=w.fmt(w.target*fr);
@@ -630,18 +626,21 @@ function updDial(p,t){ const d=dialAt(clamp01(p));
   if(dProv) dProv.textContent=d.prov+'  ·  ±'+Math.round(d.unc*100)+'%'; }
 
 // ===== loop =====
+let ps=0, lastActive=null; // ps = eased progress, so animations flow instead of snapping to scroll
 function loop(){
   const t=performance.now();
   updateActive();
-  for(const s of SCENES) op[s] += ((s===scene_name?1:0) - op[s])*0.08;
+  for(const s of SCENES) op[s] += ((s===scene_name?1:0) - op[s])*0.06;
   const p=secProgress();
+  if(activeSection!==lastActive){ ps=p; lastActive=activeSection; } // no cross-section rewind flash
+  ps += (p-ps)*0.06; // the flow: eased, not 1:1 with the wheel
   if(earth){ earth.visible=op.hero>0.01; earth.rotation.y=t*0.00004+0.3; earth.rotation.x=-0.16;
     earth.traverse(m=>{ if(m.isMesh&&m.material){ m.material.transparent=true; m.material.opacity=op.hero; }}); }
-  try{ updCloud(p,op.cloud); }catch(e){}
-  try{ updTraj(p,op.traj); }catch(e){}
-  try{ updScan(p,op.scan,t); }catch(e){}
-  try{ updWorth(p); }catch(e){}
-  try{ updDial(p,t); }catch(e){}
+  try{ updCloud(ps,op.cloud); }catch(e){}
+  try{ updTraj(ps,op.traj); }catch(e){}
+  try{ updScan(ps,op.scan,t); }catch(e){}
+  try{ updWorth(ps); }catch(e){}
+  try{ updDial(ps,t); }catch(e){}
   setOv(ovStat,op.cloud); setOv(ovCalc,op.traj); setOv(ovTerm,op.scan); setOv(ovWorth,op.worth); setOv(ovDial,op.honest);
   renderer.render(scene,camera);
   requestAnimationFrame(loop);
