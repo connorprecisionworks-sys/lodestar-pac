@@ -22,7 +22,10 @@
   .topbar a{color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em}
 
   .story{position:relative;z-index:1}
-  .step{min-height:104vh;display:flex;align-items:center;padding:0 7vw;max-width:1180px;margin:0 auto}
+  /* each step is a tall scroll track; .pin stays locked to the viewport while you
+     scroll the animation through, so the header never leaves before it finishes */
+  .step{min-height:200vh;position:relative}
+  .pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;padding:0 7vw;max-width:1180px;margin:0 auto}
   .block{max-width:470px;padding:26px 28px;background:linear-gradient(100deg,rgba(4,4,5,.86) 55%,rgba(4,4,5,0));border-left:1px solid var(--line2)}
   .eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:#fff}
   .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
@@ -36,7 +39,7 @@
   .pill{font-family:var(--mono);font-size:11px;border:1px solid var(--line2);padding:1px 7px;color:var(--muted)}
 
   /* hero */
-  .hero{flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100vh;max-width:none}
+  .hero{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100vh;max-width:none;padding:0 7vw}
   .hero .star{width:min(40vw,300px);height:auto}
   .hero .word{width:min(34vw,300px);height:auto;margin-top:-8px}
   .hero .tag{font-family:var(--serif);font-size:clamp(18px,2.4vw,23px);color:#cdd0d6;max-width:42ch;margin-top:18px}
@@ -199,6 +202,7 @@
     </section>
 
     <section class="step" data-scene="cloud">
+      <div class="pin">
       <div class="block">
         <div class="num">01 — The gap</div>
         <h2>Only 267 of 41,884 have a measured composition.</h2>
@@ -211,9 +215,11 @@
           <div class="cr"><span>Provenance</span><b>measured</b></div>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="step" data-scene="traj">
+      <div class="pin">
       <div class="block">
         <div class="num">02 — Launch windows</div>
         <h2>Real trajectories, validated.</h2>
@@ -226,9 +232,11 @@
           <div class="cr"><span>Provenance</span><b>measured</b></div>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="step" data-scene="scan">
+      <div class="pin">
       <div class="block">
         <div class="num">03 — Machine characterization</div>
         <h2>Predicting composition from reflectivity.</h2>
@@ -241,9 +249,11 @@
           <div class="cr"><span>Provenance</span><b>ml-predicted</b></div>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="step" data-scene="worth">
+      <div class="pin">
       <div class="block">
         <div class="num">04 — Value from composition</div>
         <h2>Worth, built from what's actually there.</h2>
@@ -256,9 +266,11 @@
           <div class="cr"><span>Provenance</span><b>measured</b></div>
         </div>
       </div>
+      </div>
     </section>
 
     <section class="step" data-scene="honest">
+      <div class="pin">
       <div class="block">
         <div class="num">05 — The fence</div>
         <h2>Honest by construction.</h2>
@@ -269,6 +281,7 @@
           <div class="cr"><span>Methods</span><b>Lambert · random forest</b></div>
           <div class="cr"><span>Deployment</span><b>static · open</b></div>
         </div>
+      </div>
       </div>
     </section>
   </div>
@@ -464,10 +477,10 @@ function fallbackEarth(){
   return g;
 }
 loader.load('/brand/earth.glb', g=>{
-  const o=g.scene; fitModel(o, 1.65);
+  const o=g.scene; fitModel(o, 2.15);
   o.traverse(m=>{ if(m.isMesh && m.material) m.material.opacity=0; });
-  const wrap=new THREE.Group(); wrap.add(o); wrap.position.set(0.7,0,0); scene.add(wrap); earth=wrap;
-}, undefined, ()=>{ earth=fallbackEarth(); earth.position.set(0.7,0,0); scene.add(earth); });
+  const wrap=new THREE.Group(); wrap.add(o); wrap.position.set(0,0,0); scene.add(wrap); earth=wrap; // origin = always screen-centered
+}, undefined, ()=>{ earth=fallbackEarth(); earth.position.set(0,0,0); scene.add(earth); });
 
 // ---- 01 CLOUD: the scarcity field ----
 function randInSphere(r){ const u=Math.random(),v=Math.random(),th=2*Math.PI*u,ph=Math.acos(2*v-1),rr=r*Math.cbrt(Math.random());
@@ -548,18 +561,23 @@ function dialAt(p){ if(p<=DIALK[0].at) return DIALK[0]; if(p>=DIALK[2].at) retur
 // ===== scene controller =====
 const SCENES=['hero','cloud','traj','scan','worth','honest'];
 const op={}; SCENES.forEach(s=>op[s]=(s==='hero')?1:0);
-let scene_name='hero', activeSection=document.querySelector('.hero');
-const io=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ scene_name=e.target.dataset.scene||'hero'; activeSection=e.target; } }); }, { threshold:0.5 });
-document.querySelectorAll('.step[data-scene]').forEach(s=>io.observe(s));
-// clear stage over the charts
-const perfIo=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting) scene_name='none'; }); }, { threshold:0.12 });
-perfIo.observe(ov('perf'));
+const stepEls=[...document.querySelectorAll('.step[data-scene]')];
+const perfEl=ov('perf');
+let scene_name='hero', activeSection=stepEls[0];
+// active section = the one whose track straddles the viewport middle. Robust with
+// tall pinned sections (an IntersectionObserver ratio can't exceed ~0.5 here).
+function updateActive(){ const mid=innerHeight*0.5; let found=null;
+  for(const s of stepEls){ const r=s.getBoundingClientRect(); if(r.top<=mid && r.bottom>mid){ found=s; break; } }
+  if(found){ scene_name=found.dataset.scene; activeSection=found; }
+  else if(perfEl && perfEl.getBoundingClientRect().top<=mid){ scene_name='none'; } }
 // reveal charts
 const chartIo=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); }); }, { threshold:0.25 });
 document.querySelectorAll('.chart').forEach(c=>chartIo.observe(c));
 
+// progress 0..1 across the pinned portion of the active section (the scroll track
+// past one viewport height), so the animation finishes while the header is still pinned
 function secProgress(){ if(!activeSection) return 0; const r=activeSection.getBoundingClientRect();
-  return clamp01((innerHeight*0.5 - r.top) / (r.height||1)); }
+  const track=activeSection.offsetHeight - innerHeight; return clamp01(-r.top / Math.max(1,track)); }
 function setOv(el,o){ if(el) el.style.opacity = o<0.02?0:o.toFixed(3); }
 
 // ===== per-scene updates =====
@@ -614,6 +632,7 @@ function updDial(p,t){ const d=dialAt(clamp01(p));
 // ===== loop =====
 function loop(){
   const t=performance.now();
+  updateActive();
   for(const s of SCENES) op[s] += ((s===scene_name?1:0) - op[s])*0.08;
   const p=secProgress();
   if(earth){ earth.visible=op.hero>0.01; earth.rotation.y=t*0.00004+0.3; earth.rotation.x=-0.16;
