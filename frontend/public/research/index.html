@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lodestar PAC — Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bg:#040405; --ink:#eceef1; --muted:#9296a0; --faint:#5a5e66; --line2:#262a30;
+    --serif:"Newsreader",Georgia,serif; --sans:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",monospace; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:18px 28px}
+  .topbar .brand{display:flex;align-items:center;gap:9px}
+  .topbar .brand img{height:18px}
+  .topbar a{color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em}
+  .wrap{max-width:880px;margin:0 auto;padding:130px 28px 90px}
+  .eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--faint)}
+  h1{font-family:var(--serif);font-weight:500;font-size:clamp(34px,5.5vw,56px);line-height:1.05;letter-spacing:-.01em;margin:10px 0 14px}
+  .lede{font-size:18px;color:#c4c7cd;max-width:60ch}
+  .papers{margin-top:48px;border-top:1px solid var(--line2)}
+  a.paper{display:block;text-decoration:none;color:inherit;border-bottom:1px solid var(--line2);padding:26px 0;transition:padding-left .25s ease,background .25s ease}
+  a.paper:hover{padding-left:14px;background:linear-gradient(90deg,rgba(124,151,232,.06),transparent)}
+  .paper .pno{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase}
+  .paper h2{font-family:var(--serif);font-weight:500;font-size:clamp(22px,3vw,30px);margin:6px 0 8px;letter-spacing:-.01em}
+  .paper p{margin:0;color:var(--muted);font-size:15px;max-width:64ch}
+  .paper .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;margin-top:12px;display:flex;gap:18px;flex-wrap:wrap}
+  .paper .go{float:right;font-family:var(--mono);font-size:12px;color:var(--ink)}
+  .soon{opacity:.5;pointer-events:none}
+  footer{max-width:880px;margin:0 auto;padding:0 28px 80px;font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.9}
+  footer a{color:#fff}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="brand"><img src="/brand/star.png" alt="" style="height:22px" /><img src="/brand/wordmark.png" alt="Lodestar PAC" /></div>
+    <a href="/">← Console</a>
+  </div>
+
+  <div class="wrap">
+    <div class="eyebrow">Lodestar PAC · Research</div>
+    <h1>How we characterize the asteroids no one has measured.</h1>
+    <p class="lede">A growing set of write-ups on the data engineering, astrodynamics, and machine learning behind Lodestar. Each one is honest by construction: every figure carries its provenance and its uncertainty.</p>
+
+    <div class="papers">
+      <a class="paper" href="/methods.html">
+        <span class="go">Read →</span>
+        <div class="pno">Paper 01 · Overview</div>
+        <h2>Methods &amp; Model Card</h2>
+        <p>The full pipeline end to end: ranking by value and accessibility, a validated Lambert launch-window solver, the composition model, and the resource-value layer. The map of the whole system.</p>
+        <div class="meta"><span>Astrodynamics</span><span>Value model</span><span>Model card</span><span>Scrollytelling</span></div>
+      </a>
+
+      <a class="paper" href="/research/taxonomy.html">
+        <span class="go">Read →</span>
+        <div class="pno">Paper 02 · Machine learning</div>
+        <h2>Training, Testing &amp; Improving the Taxonomy Model</h2>
+        <p>How the composition classifier is trained on 116 measured asteroids, how it is tested without ever scoring an object it has seen, what calibration and abstention buy us, and exactly what it would take to make it materially better.</p>
+        <div class="meta"><span>Random forest</span><span>Calibration</span><span>Abstention</span><span>Learning curves</span></div>
+      </a>
+
+      <a class="paper soon" href="#">
+        <span class="go">Soon</span>
+        <div class="pno">Paper 03 · Mission design</div>
+        <h2>Round-Trip Mining Economics</h2>
+        <p>Two-body Lambert round trips, the rocket-equation return-mass balance, and where the value really is: material delivered in space versus sold on Earth.</p>
+        <div class="meta"><span>Lambert round trip</span><span>Rocket equation</span><span>In-progress</span></div>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    Lodestar PAC v1 · estimates with explicit uncertainty and provenance, never measurements.<br />
+    <a href="/">← Open the console</a>
+  </footer>
+</body>
+</html>

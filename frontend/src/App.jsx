@@ -65,7 +65,7 @@ export default function App() {
           <span className="eyebrow"><b>Predictive Asteroid Characterization</b></span>
           <span className="eyebrow">Prospecting Console</span>
           <span className="eyebrow">Near-Earth Catalog</span>
-          <a className="eyebrow methods-link" href="/methods.html">Methods &amp; Model Card ↗</a>
+          <a className="eyebrow methods-link" href="/research/">Research ↗</a>
         </div>
         {meta && (
           <div className="telem">
