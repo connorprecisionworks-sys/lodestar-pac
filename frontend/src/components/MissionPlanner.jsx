@@ -1,9 +1,49 @@
 import { useMemo, useState } from "react";
-import { roundTrip, todayJd } from "../lib/astro.js";
+import { roundTrip, stayProfile, todayJd } from "../lib/astro.js";
 import { VEHICLES, ENGINES, missionEconomics } from "../lib/vehicles.js";
 import { fmtUSD, jdToDate } from "../lib/format.js";
 
 const T0 = todayJd(); // fixed launch reference for the session
+
+// Stay-vs-fuel chart. Total round-trip Δv (capture + aerocapture) as a function
+// of mining stay, with the fuel-optimal stay marked and the current stay tracked.
+// Click anywhere to jump the stay there.
+function StayCurve({ profile, stay, onPick }) {
+  const pts = profile.points;
+  if (pts.length < 2) return null;
+  const W = 320, H = 150, x0 = 10, x1 = 312, y0 = 12, y1 = 108;
+  const sMin = pts[0].stayDays, sMax = pts[pts.length - 1].stayDays;
+  let dvLo = Infinity, dvHi = -Infinity;
+  for (const p of pts) { dvLo = Math.min(dvLo, p.dvTotalAeroKms); dvHi = Math.max(dvHi, p.dvTotalCaptureKms); }
+  const pad = (dvHi - dvLo) * 0.08 || 1; dvLo -= pad; dvHi += pad;
+  const sx = (s) => x0 + ((s - sMin) / (sMax - sMin)) * (x1 - x0);
+  const sy = (d) => y1 - ((d - dvLo) / (dvHi - dvLo)) * (y1 - y0);
+  const line = (key) => pts.map((p) => `${sx(p.stayDays).toFixed(1)},${sy(p[key]).toFixed(1)}`).join(" ");
+  const opt = profile.optimal;
+  const pick = (ev) => {
+    const r = ev.currentTarget.getBoundingClientRect();
+    const px = ((ev.clientX - r.left) / r.width) * W;
+    const frac = Math.min(1, Math.max(0, (px - x0) / (x1 - x0)));
+    onPick(Math.round((sMin + frac * (sMax - sMin)) / 15) * 15);
+  };
+  return (
+    <svg className="staychart" viewBox={`0 0 ${W} ${H}`} onClick={pick} style={{ cursor: "pointer" }}>
+      <line className="ax" x1={x0} y1={y1} x2={x1} y2={y1} />
+      {/* optimal stay */}
+      <line x1={sx(opt.stayDays)} y1={y0} x2={sx(opt.stayDays)} y2={y1} stroke="var(--lime)" strokeWidth="1" strokeDasharray="2 3" opacity="0.5" />
+      {/* current stay */}
+      <line x1={sx(stay)} y1={y0} x2={sx(stay)} y2={y1} stroke="#fff" strokeWidth="1" opacity="0.85" />
+      <polyline fill="none" stroke="var(--lime-dim)" strokeWidth="1" opacity="0.7" points={line("dvTotalAeroKms")} />
+      <polyline fill="none" stroke="var(--lime)" strokeWidth="1.6" points={line("dvTotalCaptureKms")} />
+      <circle cx={sx(opt.stayDays)} cy={sy(opt.dvTotalCaptureKms)} r="3" fill="var(--lime)" />
+      <text x={sx(opt.stayDays)} y={y0 - 1} fill="var(--lime)" fontFamily="var(--mono)" fontSize="9" textAnchor="middle">opt {opt.stayDays}d</text>
+      <text x={x0} y={y1 + 12} className="axt">{sMin}d</text>
+      <text x={x1} y={y1 + 12} className="axt" textAnchor="end">{sMax}d</text>
+      <text x={x0} y={y0 + 2} className="axt">{dvHi.toFixed(0)} km/s</text>
+      <text x={x0} y={y1 - 2} className="axt">{dvLo.toFixed(0)}</text>
+    </svg>
+  );
+}
 const fmtT = (t) => (t >= 1000 ? (t / 1000).toFixed(t >= 10000 ? 0 : 1) + "k" : Math.round(t).toString());
 const fmtDur = (d) => (d >= 365 ? (d / 365.25).toFixed(1) + " yr" : d + " d");
 
@@ -21,7 +61,11 @@ export default function MissionPlanner({ detail }) {
     return { a: detail.a_au, e: detail.e, i: detail.i_deg, om: detail.om_deg, w: detail.w_deg, ma: detail.ma_deg, epoch: detail.epoch_jd };
   }, [detail]);
 
-  const rt = useMemo(() => (el ? roundTrip(el, T0, { stayDays: stay }) : null), [el, stay]);
+  const profile = useMemo(() => (el ? stayProfile(el, T0, {}) : null), [el]);
+  const rt = useMemo(
+    () => (el ? roundTrip(el, T0, { stayDays: stay, outbound: profile?.outbound }) : null),
+    [el, stay, profile],
+  );
   const vehicle = VEHICLES.find((v) => v.id === vehId);
   const engine = ENGINES.find((e) => e.id === engId);
   const complex = detail?.value_complex || "S";
@@ -67,6 +111,13 @@ export default function MissionPlanner({ detail }) {
         <label>Mining stay <em>{stay} days</em></label>
         <input type="range" min="30" max="540" step="15" value={stay} onChange={(e) => setStay(+e.target.value)} />
       </div>
+
+      {profile && profile.points.length > 1 && (
+        <div className="staywrap">
+          <div className="staycap">Fuel cost vs mining stay — <span style={{ color: "var(--lime)" }}>capture</span> · <span style={{ color: "var(--lime-dim)" }}>aerocapture</span>. Sweet spot at {profile.optimal.stayDays} days; cost climbs as return phasing drifts. Click to set.</div>
+          <StayCurve profile={profile} stay={stay} onPick={setStay} />
+        </div>
+      )}
 
       {/* itinerary timeline */}
       <div className="mptl">

@@ -192,3 +192,8 @@ footer .lime{color:var(--lime-dim)}
 .mptl-bar .seg-ret{background:var(--lime-dim)}
 .mptl-leg{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:7px;letter-spacing:.04em}
 .mptl-leg b{color:var(--ink);font-weight:500}
+.staywrap{margin:14px 0 4px}
+.staycap{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:6px;letter-spacing:.02em}
+.staychart{width:100%;height:auto;display:block;border:1px solid var(--line2);background:#0c0e11}
+.staychart .ax{stroke:var(--line2);stroke-width:1}
+.staychart .axt{font-family:var(--mono);font-size:8px;fill:var(--faint)}

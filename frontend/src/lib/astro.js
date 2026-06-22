@@ -143,61 +143,105 @@ export function returnTransferDv(el, depJd, tof) {
 // Propulsive capture into LEO from arrival v-infinity (symmetric with launch).
 const leoCapture = (vinf) => Math.sqrt(vinf * vinf + 2 * V_LEO * V_LEO) - V_LEO;
 
-// Full round trip: Earth -> rendezvous -> mine for stayDays -> depart -> Earth.
-// Jointly searches outbound departure x outbound TOF x return TOF (coarse) and
-// minimizes total propulsive delta-v (conservative LEO-capture variant). Also
-// reports the aerocapture variant where the Earth-arrival burn is ~free.
-export function roundTrip(el, startJd, opts = {}) {
-  const {
-    stayDays = 180,
-    depSpan = 1460, depStep = 20,
-    tofOutMin = 60, tofOutMax = 560, tofOutStep = 20,
-    tofRetMin = 60, tofRetMax = 560, tofRetStep = 20,
-  } = opts;
+// Cheapest outbound launch: sweep departure x outbound TOF, minimize rendezvous
+// delta-v (launch + match). The mission anchors here; mining stay then drives
+// the return. Returns null if nothing converges.
+export function bestOutbound(el, startJd, opts = {}) {
+  const { depSpan = 1460, depStep = 20, tofOutMin = 60, tofOutMax = 560, tofOutStep = 20 } = opts;
   let best = null;
   for (let dep = 0; dep <= depSpan; dep += depStep) {
     for (let tofOut = tofOutMin; tofOut <= tofOutMax; tofOut += tofOutStep) {
       const out = transferDv(el, startJd + dep, tofOut);
       if (!out || !Number.isFinite(out.dvTotal)) continue;
-      const retDepOffset = dep + tofOut + stayDays;
-      for (let tofRet = tofRetMin; tofRet <= tofRetMax; tofRet += tofRetStep) {
-        const ret = returnTransferDv(el, startJd + retDepOffset, tofRet);
-        if (!ret) continue;
-        const dvCapture = leoCapture(ret.vinfArrive);
-        const totalCap = out.dvTotal + ret.dvDepart + dvCapture;
-        const totalAero = out.dvTotal + ret.dvDepart;
-        if (!best || totalCap < best.totalCap) {
-          best = {
-            depOffsetDays: dep, tofOutDays: tofOut, stayDays, tofRetDays: tofRet,
-            dvLaunchKms: out.dvLaunch, dvArriveKms: out.dvArrive, dvOutKms: out.dvTotal,
-            dvReturnDepartKms: ret.dvDepart, vinfReturnKms: ret.vinfArrive,
-            dvEarthCaptureKms: dvCapture,
-            totalCap, totalAero,
-          };
-        }
+      if (!best || out.dvTotal < best.dvOutKms) {
+        best = { depOffsetDays: dep, tofOutDays: tofOut, dvLaunchKms: out.dvLaunch, dvArriveKms: out.dvArrive, dvOutKms: out.dvTotal };
       }
     }
   }
-  if (!best) return null;
+  return best;
+}
+
+// Cheapest return for a fixed return-departure date: sweep return TOF, minimize
+// total propulsive delta-v (depart burn + LEO capture).
+export function bestReturn(el, startJd, retDepOffsetDays, opts = {}) {
+  const { tofRetMin = 60, tofRetMax = 600, tofRetStep = 20 } = opts;
+  let best = null;
+  for (let tofRet = tofRetMin; tofRet <= tofRetMax; tofRet += tofRetStep) {
+    const ret = returnTransferDv(el, startJd + retDepOffsetDays, tofRet);
+    if (!ret) continue;
+    const dvCapture = leoCapture(ret.vinfArrive);
+    const score = ret.dvDepart + dvCapture;
+    if (!best || score < best.score) {
+      best = { tofRetDays: tofRet, dvReturnDepartKms: ret.dvDepart, vinfReturnKms: ret.vinfArrive, dvEarthCaptureKms: dvCapture, score };
+    }
+  }
+  return best;
+}
+
+// Full round trip: Earth -> rendezvous -> mine for stayDays -> depart -> Earth.
+// Anchors the cheapest outbound, then finds the cheapest return for the stay.
+// Reports both Earth-arrival variants (propulsive LEO capture vs aerocapture).
+// Pass a precomputed `outbound` to reuse one anchor across many stay values.
+export function roundTrip(el, startJd, opts = {}) {
+  const { stayDays = 180, outbound } = opts;
+  const ob = outbound || bestOutbound(el, startJd, opts);
+  if (!ob) return null;
+  const arrive = ob.depOffsetDays + ob.tofOutDays;
+  const retDepOffset = arrive + stayDays;
+  const ret = bestReturn(el, startJd, retDepOffset, opts);
+  if (!ret) return null;
   const round = (x) => +x.toFixed(3);
+  const totalCap = ob.dvOutKms + ret.dvReturnDepartKms + ret.dvEarthCaptureKms;
+  const totalAero = ob.dvOutKms + ret.dvReturnDepartKms;
   return {
     startJd, stayDays,
-    depOffsetDays: best.depOffsetDays,
-    tofOutDays: best.tofOutDays,
-    tofRetDays: best.tofRetDays,
-    arriveOffsetDays: best.depOffsetDays + best.tofOutDays,
-    returnDepartOffsetDays: best.depOffsetDays + best.tofOutDays + stayDays,
-    returnArriveOffsetDays: best.depOffsetDays + best.tofOutDays + stayDays + best.tofRetDays,
-    totalDurationDays: best.tofOutDays + stayDays + best.tofRetDays,
-    dvLaunchKms: round(best.dvLaunchKms),
-    dvArriveKms: round(best.dvArriveKms),
-    dvOutKms: round(best.dvOutKms),
-    dvReturnDepartKms: round(best.dvReturnDepartKms),
-    vinfReturnKms: round(best.vinfReturnKms),
-    dvEarthCaptureKms: round(best.dvEarthCaptureKms),
-    dvTotalCaptureKms: round(best.totalCap),
-    dvTotalAeroKms: round(best.totalAero),
+    depOffsetDays: ob.depOffsetDays,
+    tofOutDays: ob.tofOutDays,
+    tofRetDays: ret.tofRetDays,
+    arriveOffsetDays: arrive,
+    returnDepartOffsetDays: retDepOffset,
+    returnArriveOffsetDays: retDepOffset + ret.tofRetDays,
+    totalDurationDays: ob.tofOutDays + stayDays + ret.tofRetDays,
+    dvLaunchKms: round(ob.dvLaunchKms),
+    dvArriveKms: round(ob.dvArriveKms),
+    dvOutKms: round(ob.dvOutKms),
+    dvReturnDepartKms: round(ret.dvReturnDepartKms),
+    vinfReturnKms: round(ret.vinfReturnKms),
+    dvEarthCaptureKms: round(ret.dvEarthCaptureKms),
+    dvTotalCaptureKms: round(totalCap),
+    dvTotalAeroKms: round(totalAero),
+    outbound: ob,
   };
+}
+
+// Stay-vs-efficiency sweep: with the outbound anchored, vary the mining stay and
+// record the round-trip delta-v. This is the curve with a fuel-optimal sweet
+// spot — return phasing aligns at some stays and drifts at others.
+export function stayProfile(el, startJd, opts = {}) {
+  const { stayMin = 30, stayMax = 540, stayStep = 15 } = opts;
+  const ob = bestOutbound(el, startJd, opts);
+  if (!ob) return null;
+  const arrive = ob.depOffsetDays + ob.tofOutDays;
+  const round = (x) => +x.toFixed(3);
+  const points = [];
+  let bestCap = null;
+  for (let stay = stayMin; stay <= stayMax; stay += stayStep) {
+    const ret = bestReturn(el, startJd, arrive + stay, opts);
+    if (!ret) continue;
+    const totalCap = ob.dvOutKms + ret.dvReturnDepartKms + ret.dvEarthCaptureKms;
+    const totalAero = ob.dvOutKms + ret.dvReturnDepartKms;
+    const p = {
+      stayDays: stay,
+      dvReturnDepartKms: round(ret.dvReturnDepartKms),
+      dvEarthCaptureKms: round(ret.dvEarthCaptureKms),
+      dvTotalCaptureKms: round(totalCap),
+      dvTotalAeroKms: round(totalAero),
+      tofRetDays: ret.tofRetDays,
+    };
+    points.push(p);
+    if (!bestCap || totalCap < bestCap.dvTotalCaptureKms) bestCap = p;
+  }
+  return { outbound: ob, dvOutKms: round(ob.dvOutKms), points, optimal: bestCap };
 }
 
 export function porkchop(el, startJd, opts = {}) {
