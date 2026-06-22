@@ -4,6 +4,7 @@ import { missionCost, prospectivity, valueToCost } from "../lib/mining.js";
 import PorkchopPlot from "./PorkchopPlot.jsx";
 import AsteroidSpecimen from "./AsteroidSpecimen.jsx";
 import MaterialBreakdown from "./MaterialBreakdown.jsx";
+import MissionPlanner from "./MissionPlanner.jsx";
 
 function Row({ k, v }) {
   return <div className="kv"><span>{k}</span><span className="mono">{v}</span></div>;
@@ -91,6 +92,10 @@ export default function DetailPanel({ detail, trajectory, busy, onCompute, meta 
           <p className="note small">{trajectory.phase2_note}</p>
         </div>
       )}
+
+      <div className="traj">
+        <MissionPlanner detail={detail} />
+      </div>
     </div>
   );
 }

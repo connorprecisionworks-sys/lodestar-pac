@@ -125,6 +125,81 @@ export function transferDv(el, depJd, tof) {
   return { dvLaunch, dvArrive: dvArr, dvTotal: dvLaunch + dvArr };
 }
 
+// Return leg: Lambert from the asteroid (at depJd) back to Earth (at depJd+tof).
+// dvDepart = burn to leave the asteroid (we are at rest relative to it after
+// rendezvous); vinfArrive = hyperbolic excess speed at Earth on arrival.
+export function returnTransferDv(el, depJd, tof) {
+  const [rA, vA] = propagate(el, depJd);
+  const [rE, vE] = earthState(depJd + tof);
+  const sol = lambert(rA, rE, tof, MU_SUN, true);
+  if (!sol) return null;
+  const [v1, v2] = sol;
+  const dvDepart = norm(sub(v1, vA)) * AU_DAY_TO_KMS;
+  const vinfArrive = norm(sub(v2, vE)) * AU_DAY_TO_KMS;
+  if (!Number.isFinite(dvDepart) || !Number.isFinite(vinfArrive)) return null;
+  return { dvDepart, vinfArrive };
+}
+
+// Propulsive capture into LEO from arrival v-infinity (symmetric with launch).
+const leoCapture = (vinf) => Math.sqrt(vinf * vinf + 2 * V_LEO * V_LEO) - V_LEO;
+
+// Full round trip: Earth -> rendezvous -> mine for stayDays -> depart -> Earth.
+// Jointly searches outbound departure x outbound TOF x return TOF (coarse) and
+// minimizes total propulsive delta-v (conservative LEO-capture variant). Also
+// reports the aerocapture variant where the Earth-arrival burn is ~free.
+export function roundTrip(el, startJd, opts = {}) {
+  const {
+    stayDays = 180,
+    depSpan = 1460, depStep = 20,
+    tofOutMin = 60, tofOutMax = 560, tofOutStep = 20,
+    tofRetMin = 60, tofRetMax = 560, tofRetStep = 20,
+  } = opts;
+  let best = null;
+  for (let dep = 0; dep <= depSpan; dep += depStep) {
+    for (let tofOut = tofOutMin; tofOut <= tofOutMax; tofOut += tofOutStep) {
+      const out = transferDv(el, startJd + dep, tofOut);
+      if (!out || !Number.isFinite(out.dvTotal)) continue;
+      const retDepOffset = dep + tofOut + stayDays;
+      for (let tofRet = tofRetMin; tofRet <= tofRetMax; tofRet += tofRetStep) {
+        const ret = returnTransferDv(el, startJd + retDepOffset, tofRet);
+        if (!ret) continue;
+        const dvCapture = leoCapture(ret.vinfArrive);
+        const totalCap = out.dvTotal + ret.dvDepart + dvCapture;
+        const totalAero = out.dvTotal + ret.dvDepart;
+        if (!best || totalCap < best.totalCap) {
+          best = {
+            depOffsetDays: dep, tofOutDays: tofOut, stayDays, tofRetDays: tofRet,
+            dvLaunchKms: out.dvLaunch, dvArriveKms: out.dvArrive, dvOutKms: out.dvTotal,
+            dvReturnDepartKms: ret.dvDepart, vinfReturnKms: ret.vinfArrive,
+            dvEarthCaptureKms: dvCapture,
+            totalCap, totalAero,
+          };
+        }
+      }
+    }
+  }
+  if (!best) return null;
+  const round = (x) => +x.toFixed(3);
+  return {
+    startJd, stayDays,
+    depOffsetDays: best.depOffsetDays,
+    tofOutDays: best.tofOutDays,
+    tofRetDays: best.tofRetDays,
+    arriveOffsetDays: best.depOffsetDays + best.tofOutDays,
+    returnDepartOffsetDays: best.depOffsetDays + best.tofOutDays + stayDays,
+    returnArriveOffsetDays: best.depOffsetDays + best.tofOutDays + stayDays + best.tofRetDays,
+    totalDurationDays: best.tofOutDays + stayDays + best.tofRetDays,
+    dvLaunchKms: round(best.dvLaunchKms),
+    dvArriveKms: round(best.dvArriveKms),
+    dvOutKms: round(best.dvOutKms),
+    dvReturnDepartKms: round(best.dvReturnDepartKms),
+    vinfReturnKms: round(best.vinfReturnKms),
+    dvEarthCaptureKms: round(best.dvEarthCaptureKms),
+    dvTotalCaptureKms: round(best.totalCap),
+    dvTotalAeroKms: round(best.totalAero),
+  };
+}
+
 export function porkchop(el, startJd, opts = {}) {
   const { depSpan = 730, depStep = 15, tofMin = 70, tofMax = 760, tofStep = 20 } = opts;
   const deps = [], tofs = [];

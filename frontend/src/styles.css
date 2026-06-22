@@ -172,3 +172,23 @@ td.score{color:var(--lime)}
 footer{margin-top:22px;border-top:1px solid var(--line2);padding-top:14px;font-family:var(--mono);font-size:10px;
   color:var(--faint);line-height:1.8;text-transform:uppercase;letter-spacing:.12em}
 footer .lime{color:var(--lime-dim)}
+
+/* ---- mission planner ---- */
+.seg{display:flex;flex-wrap:wrap;gap:1px;background:var(--line2);border:1px solid var(--line2);margin:8px 0}
+.segbtn{flex:1 1 auto;min-width:0;padding:7px 8px;background:#0a0b0d;border:0;color:var(--muted);
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;cursor:pointer;white-space:nowrap}
+.segbtn.sm{font-size:9.5px;letter-spacing:.06em;padding:6px 6px}
+.segbtn:hover{color:var(--ink)}
+.segbtn.on{background:var(--lime);color:#0a0b0d}
+.mpstay{margin:12px 0 4px}
+.mpstay label{display:block;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:6px}
+.mpstay label em{color:var(--lime);font-style:normal;float:right;letter-spacing:.08em}
+.mpstay input[type=range]{width:100%}
+.mptl{margin:14px 0 12px}
+.mptl-bar{display:flex;width:100%;height:12px;border:1px solid var(--line2);overflow:hidden}
+.mptl-bar span{height:100%}
+.mptl-bar .seg-out{background:var(--lime)}
+.mptl-bar .seg-stay{background:#5a5e66;background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(0,0,0,.35) 3px,rgba(0,0,0,.35) 6px)}
+.mptl-bar .seg-ret{background:var(--lime-dim)}
+.mptl-leg{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:7px;letter-spacing:.04em}
+.mptl-leg b{color:var(--ink);font-weight:500}
