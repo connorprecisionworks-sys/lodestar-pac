@@ -22,7 +22,7 @@ from sklearn.model_selection import LeaveOneOut
 from backend.ml import taxonomy as T
 
 OUT = Path("data/models/taxonomy_predictions.parquet")
-OPTIONAL = ["sdss_a_star", "sdss_i_z", "sdss_g_i", "pv_neowise"]
+OPTIONAL = ["ir_albedo", "nir_v_ratio", "sdss_a_star", "sdss_i_z", "sdss_g_i"]
 MIN_COV = 20  # need at least this many labelled objects with the feature to include it
 
 

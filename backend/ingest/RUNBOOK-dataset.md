@@ -10,14 +10,22 @@ cd path/to/lodestar
 ```
 Everything below is run from the repo root with `uv run`.
 
-## 1. Pull the three external catalogues
+## 1. Pull the external catalogues
 Run each. They download a public catalogue and write a small file to `data/raw/`.
 Each prints how many objects it cross-matched to our 41,884.
 
 ```
 uv run python -m backend.ingest.neowise
 uv run python -m backend.ingest.sdss_moc
-uv run python -m backend.ingest.spectra
+```
+`neowise` queries IRSA's TAP service (visible + near-infrared albedo, diameter).
+`sdss_moc` pulls the SDSS Moving Object Catalog colours.
+
+The spectral-label pull is OPTIONAL and low priority: SBDB already gave us 1,097
+measured classes, so extra catalogues add little. Skip unless you have a specific
+table to fold in, in which case use `--file`:
+```
+uv run python -m backend.ingest.spectra --file ~/Downloads/table.csv --source bus-demeo
 ```
 
 If any prints a 0 / low match count or a 404, the source moved. Download the file
@@ -42,8 +50,9 @@ uv run python -m backend.ingest.enrich_features
 Prints albedo coverage before/after and how many new measured labels were added.
 
 ## 3. Retrain and read the lift
+The ML step needs the machine-learning dependencies, so add `--extra ml`:
 ```
-uv run python -m backend.ml.taxonomy_enriched
+uv run --extra ml python -m backend.ml.taxonomy_enriched
 ```
 Prints `LOO accuracy  albedo-only X%  ->  enriched Y%` and per-class recall. The
 number to watch is metallic (M) recall: today it is 0%, and infrared/colour is the

@@ -25,7 +25,8 @@ RAW = {
     "sdss": Path("data/raw/sdss_colors.parquet"),
     "spectra": Path("data/raw/spectra_labels.parquet"),
 }
-NEW_FEATURES = ["pv_neowise", "diameter_neowise_km", "sdss_a_star", "sdss_i_z", "sdss_g_i"]
+NEW_FEATURES = ["pv_neowise", "ir_albedo", "nir_v_ratio", "diameter_neowise_km",
+                "sdss_a_star", "sdss_i_z", "sdss_g_i"]
 
 
 def _load(p: Path) -> pd.DataFrame | None:
