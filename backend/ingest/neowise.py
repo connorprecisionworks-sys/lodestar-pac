@@ -20,6 +20,7 @@ Output: data/raw/neowise.parquet
 from __future__ import annotations
 
 import argparse
+import io
 from pathlib import Path
 from urllib.parse import quote
 
@@ -27,11 +28,11 @@ import pandas as pd
 
 from backend.ingest.schema import desig_key
 
-# IRSA Gator native query for the whole `neowisesbprop` catalogue, IPAC-table output.
-# (IRSA's TAP service does not expose this catalogue, but Gator does.)
-_SELCOLS = "asteroid_number,prov_desig,v_albedo,ir_albedo,diameter,beaming_param"
-SOURCE_URL = ("https://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query?catalog=neowisesbprop"
-              "&spatial=NONE&outfmt=1&selcols=" + _SELCOLS)
+# IRSA TAP. The catalogue table is `neowisesbpropv2` (NEOWISE Diameters & Albedos v2).
+ADQL = ("SELECT asteroid_number,prov_desig,v_albedo,ir_albedo,diameter,beaming_param "
+        "FROM neowisesbpropv2")
+SOURCE_URL = ("https://irsa.ipac.caltech.edu/TAP/sync?REQUEST=doQuery&LANG=ADQL&FORMAT=csv&QUERY="
+              + quote(ADQL))
 RAW_PATH = Path("data/raw/neowise.parquet")
 
 
@@ -81,7 +82,12 @@ def _read_ipac(text: str) -> pd.DataFrame:
 def parse(text_or_path) -> pd.DataFrame:
     is_path = isinstance(text_or_path, (str, Path)) and Path(str(text_or_path)).exists()
     text = Path(text_or_path).read_text() if is_path else str(text_or_path)
-    raw = _read_ipac(text)
+    if text.lstrip().startswith("<"):  # VOTable/XML error from IRSA
+        raise SystemExit("[neowise] IRSA returned an error:\n" + text.strip()[:700])
+    if any(l.startswith("|") for l in text.splitlines()[:50]):  # IPAC table (e.g. a Gator --file)
+        raw = _read_ipac(text)
+    else:  # TAP CSV
+        raw = pd.read_csv(io.StringIO(text), comment="#", low_memory=False)
     raw.columns = [c.lower() for c in raw.columns]
     raw = raw.replace({"null": None, "": None})
     if "v_albedo" not in raw.columns:
