@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root{ --bg:#040405; --ink:#eceef1; --muted:#9296a0; --faint:#5a5e66; --line2:#262a30; --good:#6fce97; --water:#5ad1e6; --warn:#d6803f;
+  :root{ --bg:#040405; --ink:#eceef1; --muted:#9296a0; --faint:#5a5e66; --line2:#262a30; --good:#6fce97; --water:#5ad1e6; --warn:#d6803f; --gold:#e9d27a;
     --serif:"Newsreader",Georgia,serif; --sans:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",monospace; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
   #scene{position:fixed;inset:0;width:100vw;height:100vh;z-index:0}
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;mix-blend-mode:difference}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;mix-blend-mode:difference}
   .topbar .brand{display:flex;align-items:center;gap:9px}
   .topbar .brand img{height:18px}
   .topbar a{color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em}
@@ -23,54 +23,62 @@
   .eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--faint)}
   .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(34px,5.6vw,62px);line-height:1.02;letter-spacing:-.01em;margin:14px 0 8px;max-width:16ch}
   .hero .tag{font-family:var(--serif);font-size:clamp(17px,2.2vw,22px);color:#cdd0d6;max-width:50ch;margin-top:10px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:34px;max-width:780px;width:100%}
-  @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
-  .kpi{background:#080809;padding:14px}
-  .kpi .v{font-family:var(--serif);font-size:25px}
-  .kpi .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:5px}
   .scrollcue{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-top:42px;animation:cue 2s ease-in-out infinite}
   @keyframes cue{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:.85;transform:translateY(4px)}}
 
   .step{min-height:200vh;position:relative}
-  .pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;gap:5vw;padding:0 7vw;max-width:1180px;margin:0 auto}
-  @media(max-width:860px){.pin{flex-direction:column;justify-content:center}}
-  .col{max-width:430px;flex:0 0 auto}
-  .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
+  .pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;gap:6vw;padding:0 7vw;max-width:1200px;margin:0 auto}
+  .col{max-width:420px;flex:0 0 auto}
+  .col .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
   h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.6vw,38px);line-height:1.1;letter-spacing:-.01em;margin:6px 0 10px}
   p{margin:.6em 0;color:#c4c7cd;font-size:16px}
   b{color:#fff;font-weight:600}
-  .fig{flex:1 1 auto;min-width:0;max-width:540px;border:1px solid var(--line2);background:rgba(8,9,11,.72);backdrop-filter:blur(2px);padding:22px 24px}
-  .fig .ft{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink)}
-  .fig .fs{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;margin-bottom:14px}
-  .fig svg{width:100%;height:auto;display:block;overflow:visible}
-  .fig .cap{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6}
-  .fig .big{font-family:var(--serif);font-size:clamp(40px,6vw,72px);line-height:1;color:#fff}
-  .fig .big.strike{position:relative;display:inline-block}
-  .fig .big.strike::after{content:"";position:absolute;left:-4%;right:-4%;top:52%;height:3px;background:var(--warn);transform:scaleX(0);transform-origin:left;transition:transform .8s ease .3s}
-  .in .fig .big.strike::after,.fig.in .big.strike::after{transform:scaleX(1)}
-  .axt{font-family:var(--mono);font-size:9px;fill:var(--faint)}
-  .lab{font-family:var(--mono);font-size:10px;fill:var(--muted)}
-  .val{font-family:var(--mono);font-size:11px;fill:var(--ink)}
-  .ax{stroke:var(--line2);stroke-width:1}
+  .viz{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center}
+  .viz svg{width:100%;height:auto;max-height:62vh;display:block;overflow:visible}
+
+  /* layout variants */
+  .pin.center{flex-direction:column;text-align:center;justify-content:center;gap:34px}
+  .pin.center .col{max-width:640px}
+  .pin.center .viz{width:100%;max-width:560px}
+  .pin.bleed{display:block;max-width:none;padding:0}
+  .pin.bleed .bgcanvas{position:absolute;inset:0;width:100%;height:100%}
+  .pin.bleed .col{position:absolute;left:7vw;top:50%;transform:translateY(-50%);z-index:2;
+    background:linear-gradient(100deg,rgba(4,4,5,.82) 60%,rgba(4,4,5,0));padding:24px 30px 24px 0}
+  @media(max-width:860px){.pin{flex-direction:column;justify-content:center;gap:24px}.pin .col{max-width:560px}
+    .pin.bleed .col{position:relative;left:0;top:0;transform:none;background:none;padding:0 7vw}}
+
+  /* reveal helpers */
   .gbar{transform-box:fill-box;transform-origin:left center;transform:scaleX(0);transition:transform 1s cubic-bezier(.2,.75,.2,1)}
   .in .gbar{transform:scaleX(1)}
-  .draw{stroke-dasharray:760;stroke-dashoffset:760;transition:stroke-dashoffset 1.6s cubic-bezier(.3,.7,.3,1)}
+  .grow{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+  .in .grow{transform:scale(1)}
+  .draw{stroke-dasharray:900;stroke-dashoffset:900;transition:stroke-dashoffset 1.7s cubic-bezier(.3,.7,.3,1)}
   .in .draw{stroke-dashoffset:0}
-  .glab{opacity:0;transition:opacity .6s ease .4s}
-  .in .glab{opacity:1}
+  .fade{opacity:0;transition:opacity .8s ease}
+  .in .fade{opacity:1}
+  .rise{opacity:0;transform:translateY(20px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+  .in .rise{opacity:1;transform:none}
+  .num-lab{font-family:var(--mono);font-size:13px;fill:var(--ink)}
+  .tiny{font-family:var(--mono);font-size:10px;fill:var(--faint)}
 
-  .road{max-width:1180px;margin:0 auto;padding:60px 7vw 30px;position:relative;z-index:1}
+  /* 01 betrayal counter */
+  .counter{font-family:var(--serif);font-weight:500;font-size:clamp(46px,9vw,118px);line-height:1;color:#fff;letter-spacing:-.02em;
+    transition:color .25s ease,transform .25s ease}
+  .counter.crash{color:var(--warn)}
+
+  /* caveats + vision */
+  .road{max-width:1180px;margin:0 auto;padding:60px 7vw 20px;position:relative;z-index:1}
   .road h2{max-width:22ch}
   .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:26px}
   @media(max-width:760px){.rgrid{grid-template-columns:1fr}}
   .ritem{background:#080809;padding:22px 24px}
   .ritem h3{font-family:var(--sans);font-weight:600;font-size:16px;margin:0 0 6px;color:#fff}
   .ritem p{margin:0;font-size:14px;color:var(--muted)}
-  .vision{max-width:760px;margin:0 auto;padding:30px 7vw 10px;position:relative;z-index:1;text-align:center}
+  .vision{max-width:780px;margin:0 auto;padding:34px 7vw 70px;position:relative;z-index:1;text-align:center}
   .vision h2{font-size:clamp(26px,4vw,42px)}
   .vision p{font-size:17px;color:#cdd0d6}
 
-  footer{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:36px 28px 90px;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9}
+  footer{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:10px 28px 90px;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9}
   footer .div{border-top:1px solid var(--line2);margin-bottom:18px}
   footer a{color:#fff}
 </style>
@@ -87,175 +95,144 @@
       <div class="eyebrow">Paper 03 · Mining economics</div>
       <h1>The asteroid mining inversion.</h1>
       <div class="tag">Why the gold is a trap and the water is the prize. The valuable thing is the cheap thing, and it is only valuable where it already is: in space.</div>
-      <div class="kpis">
-        <div class="kpi"><div class="v">~3,000×</div><div class="k">value flip · in-space vs Earth</div></div>
-        <div class="kpi"><div class="v">8×</div><div class="k">all platinum ever mined · one rock</div></div>
-        <div class="kpi"><div class="v">$0.64/kg</div><div class="k">Earth-market bulk value</div></div>
-        <div class="kpi"><div class="v">decades</div><div class="k">realistic timeline</div></div>
-      </div>
       <div class="scrollcue">scroll ↓</div>
     </section>
 
-    <!-- 01 the trap -->
+    <!-- 01 the trap : betrayal counter (centered) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin center">
         <div class="col">
           <div class="num">01 — The intuition</div>
           <h2>The trillion-dollar headline is the trap.</h2>
-          <p>The story everyone tells: asteroids hold <b>trillions</b> in platinum and gold, so we fly out, fill a hold, and bring the treasure home. Our own value model will happily quote a stony asteroid at <b>$75.7&nbsp;trillion</b>.</p>
-          <p>That number is real arithmetic and a terrible plan. It multiplies tonnes of metal by <b>today's Earth price</b>, and almost every word of that assumption breaks the moment you actually deliver. The rest of this paper is why.</p>
+          <p>The story everyone tells: asteroids hold trillions in platinum and gold, so we fly out, fill a hold, and bring the treasure home. The number is real arithmetic and a terrible plan, because it prices the metal at today's value and assumes nothing changes when you actually deliver it.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">The number everyone quotes</div>
-          <div class="fs">4179 Toutatis · est. Earth-price value</div>
-          <div class="big strike">$75.7T</div>
-          <div class="cap">True at today's price. The catch is what happens to &ldquo;today's price&rdquo; when you show up with a mountain of it.</div>
-        </div>
+        <div class="viz"><div class="counter" id="trap-num" data-counter>$0</div></div>
       </div>
     </section>
 
-    <!-- 02 gravity-well tax -->
+    <!-- 02 gravity well : real 3D (full-bleed) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin bleed">
+        <canvas class="bgcanvas" id="well"></canvas>
         <div class="col">
           <div class="num">02 — The gravity-well tax</div>
           <h2>Bringing mass home is the expensive direction.</h2>
-          <p>Every kilogram pays a toll measured in <b>delta-v</b>, the velocity change a rocket must supply. Earth's gravity well is the deepest one nearby: just climbing from the surface to low orbit costs <b>9.4&nbsp;km/s</b>, more than the entire in-space leg of a mining trip.</p>
-          <p>So the cheapest place to keep asteroid material is where it already floats. Hauling it <b>down</b> Earth's well, the one direction the headline assumes, is the one you least want to pay for. In our own engine, chemical propulsion cannot even close the round trip.</p>
-        </div>
-        <div class="fig" data-fig>
-          <div class="ft">Delta-v toll by leg</div>
-          <div class="fs">km/s · Earth's well dwarfs the rest</div>
-          <svg viewBox="0 0 360 184" aria-label="Delta-v ladder">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="6" y="22">EARTH SURFACE → LEO</text>
-              <rect class="gbar" x="6" y="28" width="300" height="16" fill="var(--warn)"/>
-              <text class="val glab" x="312" y="41">9.4</text>
-              <text class="lab glab" x="6" y="66">LEO → ASTEROID (launch burn)</text>
-              <rect class="gbar" x="6" y="72" width="156" height="16" fill="#8f96a0" style="transition-delay:.1s"/>
-              <text class="val glab" x="168" y="85">4.9</text>
-              <text class="lab glab" x="6" y="110">MATCH + LEAVE ASTEROID</text>
-              <rect class="gbar" x="6" y="116" width="195" height="16" fill="#8f96a0" style="transition-delay:.2s"/>
-              <text class="val glab" x="207" y="129">6.1</text>
-              <text class="lab glab" x="6" y="154">ASTEROID → EARTH CAPTURE</text>
-              <rect class="gbar" x="6" y="160" width="147" height="16" fill="var(--warn)" style="transition-delay:.3s"/>
-              <text class="val glab" x="159" y="173">4.6</text>
-            </g>
-          </svg>
-          <div class="cap">The two amber legs both fight Earth's gravity. They dominate the budget, and they are exactly the legs &ldquo;ship it home&rdquo; cannot avoid.</div>
+          <p>Earth's gravity is the deepest well around. Climbing out of it is most of the cost of any mission. An asteroid is barely a dimple by comparison. So the one direction the headline assumes, hauling mass <b>down</b> into Earth, is the one you least want to pay for.</p>
         </div>
       </div>
     </section>
 
-    <!-- 03 price collapse -->
+    <!-- 03 price collapse (split) -->
     <section class="step">
       <div class="pin">
         <div class="col">
           <div class="num">03 — The price-collapse paradox</div>
           <h2>The treasure destroys its own value on arrival.</h2>
-          <p>Platinum is worth roughly <b>$30,000/kg</b> for one reason: scarcity. About <b>10,000 tonnes</b> have ever been mined in all of human history. A single 1-km metallic asteroid holds an estimated <b>83,000 tonnes</b> of platinum-group metal, <b>eight times</b> that entire history.</p>
-          <p>Deliver even a sliver and the price falls toward the cost of refining. The asset is only worth trillions <b>because</b> you cannot get it, and the moment you can, you cannot.</p>
+          <p>A price is a scarcity reading. Platinum is precious because only a little has ever existed. Pour an asteroid's worth onto the market and the price falls through the floor. It is worth a fortune only because you cannot get it, and the moment you can, you cannot.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Platinum price vs supply delivered</div>
-          <div class="fs">scarcity is the whole price</div>
-          <svg viewBox="0 0 360 180" aria-label="Price collapse">
-            <line class="ax" x1="40" y1="18" x2="40" y2="140"/>
-            <line class="ax" x1="40" y1="140" x2="344" y2="140"/>
-            <text class="axt glab" x="36" y="24" text-anchor="end">$30k/kg</text>
-            <text class="axt glab" x="36" y="143" text-anchor="end">~$0</text>
-            <text class="axt glab" x="40" y="158">today</text>
-            <text class="axt glab" x="344" y="158" text-anchor="end">one asteroid delivered</text>
-            <path class="draw" fill="none" stroke="var(--warn)" stroke-width="2"
-              d="M40,22 C70,26 92,118 150,132 C210,138 280,139 344,139"/>
-            <circle class="glab" cx="40" cy="22" r="3.5" fill="#eceef1"/>
-            <text class="val glab" x="150" y="86" text-anchor="middle" fill="var(--warn)">8× all ever mined</text>
+        <div class="viz">
+          <svg viewBox="0 0 380 240" data-fig aria-label="Supply floods, price collapses">
+            <!-- accumulating supply dots -->
+            <g fill="var(--gold)">
+              <circle class="grow" cx="40" cy="210" r="6"/>
+              <circle class="grow" cx="62" cy="210" r="6" style="transition-delay:.15s"/>
+              <circle class="grow" cx="84" cy="210" r="6" style="transition-delay:.3s"/>
+              <circle class="grow" cx="40" cy="192" r="6" style="transition-delay:.45s"/>
+              <circle class="grow" cx="62" cy="192" r="6" style="transition-delay:.6s"/>
+              <circle class="grow" cx="106" cy="210" r="6" style="transition-delay:.75s"/>
+              <circle class="grow" cx="84" cy="192" r="6" style="transition-delay:.9s"/>
+              <circle class="grow" cx="128" cy="210" r="6" style="transition-delay:1.05s"/>
+              <circle class="grow" cx="40" cy="174" r="6" style="transition-delay:1.2s"/>
+              <circle class="grow" cx="150" cy="210" r="6" style="transition-delay:1.35s"/>
+            </g>
+            <!-- price line cratering as the pile grows -->
+            <path class="draw" fill="none" stroke="var(--warn)" stroke-width="3"
+              d="M40,30 C120,34 150,150 230,196 C290,224 330,230 360,232"/>
+            <circle class="fade" cx="40" cy="30" r="5" fill="#fff" style="transition-delay:.2s"/>
+            <circle class="fade" cx="360" cy="232" r="5" fill="var(--warn)" style="transition-delay:1.6s"/>
           </svg>
-          <div class="cap">A commodity price is a scarcity reading. Flooding the supply does not pay you, it deletes the very number the plan was built on.</div>
         </div>
       </div>
     </section>
 
-    <!-- 04 cost-value gap -->
+    <!-- 04 cost vs value : raw scale (centered) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin center">
         <div class="col">
           <div class="num">04 — The cost-value gap</div>
-          <h2>The bulk numbers never close.</h2>
-          <p>Strip out the fantasy price and value the rock as what it is: bulk material. Across compositions that is <b>$0.62 to $4.45 per kg</b> on Earth. A returned thousand-tonne haul is worth under <b>$1&nbsp;million</b>.</p>
-          <p>Against a round-trip mission costing <b>billions</b> in hardware, propellant, and years, the value-to-cost ratio for Earth return sits far below one. You spend a fortune to deliver a rounding error.</p>
+          <h2>The numbers never close.</h2>
+          <p>Valued as bulk material, a returned thousand-tonne haul is worth under a million dollars. The mission to fetch it costs billions and takes years. You spend a fortune to deliver a rounding error.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Return a 1,000-tonne haul to Earth</div>
-          <div class="fs">log scale · value vs mission cost</div>
-          <svg viewBox="0 0 360 150" aria-label="Cost versus value">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="6" y="40">EARTH-MARKET VALUE</text>
-              <rect class="gbar" x="6" y="46" width="70" height="22" fill="#8f96a0"/>
-              <text class="val glab" x="82" y="62">~$0.7M</text>
-              <text class="lab glab" x="6" y="104">MISSION COST</text>
-              <rect class="gbar" x="6" y="110" width="330" height="22" fill="var(--warn)" style="transition-delay:.15s"/>
-              <text class="val glab" x="232" y="126" fill="#0a0b0d">~$2,000M+</text>
-            </g>
+        <div class="viz">
+          <svg viewBox="0 0 560 150" data-fig aria-label="Tiny value beside enormous cost">
+            <rect class="grow" x="14" y="64" width="22" height="22" rx="3" fill="#8f96a0"/>
+            <text class="tiny fade" x="25" y="104" text-anchor="middle" style="transition-delay:.3s">value</text>
+            <rect class="gbar" x="70" y="20" width="476" height="110" rx="4" fill="var(--warn)"/>
+            <text class="num-lab fade" x="308" y="82" text-anchor="middle" fill="#0a0b0d" style="transition-delay:.6s">cost</text>
           </svg>
-          <div class="cap">On a log scale the value bar is already generous. In linear terms it would be a single invisible pixel beside the cost.</div>
         </div>
       </div>
     </section>
 
-    <!-- 05 the inversion -->
+    <!-- 05 the inversion : value rises with altitude (split, tall) -->
     <section class="step">
       <div class="pin">
         <div class="col">
           <div class="num">05 — The inversion</div>
           <h2>The same kilogram, worth a fortune in orbit.</h2>
-          <p>Here is the flip. That bulk material is worth <b>$0.64/kg</b> sold on Earth, but a kilogram already <b>in orbit</b> is worth what it would cost to launch one from the ground: roughly <b>$2,000/kg</b>, even after a decade of falling launch prices.</p>
-          <p>Same rock, same atoms, a <b>~3,000×</b> swing, decided entirely by location. You never pay the gravity-well tax twice. You use the material where it is.</p>
+          <p>Here is the flip. The same material is nearly worthless on the ground and precious the instant it is in orbit, because in space it is worth what it would cost to launch from Earth. Same atoms. The only thing that changed is where they are.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Value of one kilogram</div>
-          <div class="fs">sold on Earth vs kept in space</div>
-          <svg viewBox="0 0 360 150" aria-label="Value inversion">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="6" y="40">ON EARTH (bulk market)</text>
-              <rect class="gbar" x="6" y="46" width="4" height="22" fill="#54595f"/>
-              <text class="val glab" x="16" y="62">$0.64</text>
-              <text class="lab glab" x="6" y="104">IN SPACE (launch cost avoided)</text>
-              <rect class="gbar" x="6" y="110" width="330" height="22" fill="var(--water)" style="transition-delay:.15s"/>
-              <text class="val glab" x="232" y="126" fill="#0a0b0d">$2,000</text>
-            </g>
+        <div class="viz">
+          <svg viewBox="0 0 300 300" data-fig aria-label="Value rises with altitude">
+            <line class="ax" x1="150" y1="20" x2="150" y2="280" stroke="var(--line2)"/>
+            <!-- ground: small dim -->
+            <circle class="grow" cx="150" cy="250" r="12" fill="#54595f"/>
+            <text class="num-lab fade" x="178" y="255" style="transition-delay:.3s">$0.64</text>
+            <text class="tiny fade" x="178" y="270" style="transition-delay:.3s">on the ground</text>
+            <!-- orbit: large bright -->
+            <circle class="grow" cx="150" cy="60" r="34" fill="var(--water)" style="transition-delay:.5s"/>
+            <text class="num-lab fade" x="196" y="60" fill="var(--water)" style="transition-delay:.8s">$2,000</text>
+            <text class="tiny fade" x="196" y="74" style="transition-delay:.8s">in orbit</text>
+            <path class="draw" d="M150,236 L150,96" fill="none" stroke="var(--water)" stroke-width="2" marker-end="url(#ar)"/>
+            <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="var(--water)"/></marker></defs>
           </svg>
-          <div class="cap">The whole business case is this picture. Stop trying to ship value down a gravity well; create it where the well is already paid for.</div>
         </div>
       </div>
     </section>
 
-    <!-- 06 what's worth mining -->
+    <!-- 06 water keystone : radial hub (full-bleed feel via centered big) -->
     <section class="step">
       <div class="pin">
         <div class="col">
           <div class="num">06 — What is actually worth mining</div>
-          <h2>Rank by use in space, not price on Earth.</h2>
-          <p><b>Water is the keystone.</b> Split it and you have hydrogen and oxygen, the most common rocket propellant, made into a gas station in orbit. The same water is radiation shielding, drinking water, and the basis of life support and agriculture for any colony.</p>
-          <p>Next come <b>structural metals</b> to build habitats and shields in place. Platinum-group metals are useful only in trace amounts, as in-space catalysts, never as an export. The ranking is the exact inverse of the Earth-price story.</p>
+          <h2>Water is the keystone.</h2>
+          <p>Split water and you have hydrogen and oxygen, the most common rocket propellant. The same water is radiation shielding, drinking water, and the basis of agriculture. Everything a colony needs traces back to it. The boring volatile, not the platinum, is what builds a spacefaring economy.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">In-space utility by material</div>
-          <div class="fs">what a colony actually needs</div>
-          <svg viewBox="0 0 360 184" aria-label="Material ranking">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="6" y="22">WATER · propellant, shielding, life</text>
-              <rect class="gbar" x="6" y="28" width="330" height="16" fill="var(--water)"/>
-              <text class="lab glab" x="6" y="60">IRON-NICKEL · structure</text>
-              <rect class="gbar" x="6" y="66" width="232" height="16" fill="#9aa0a8" style="transition-delay:.1s"/>
-              <text class="lab glab" x="6" y="98">VOLATILES / ORGANICS · life support</text>
-              <rect class="gbar" x="6" y="104" width="180" height="16" fill="#8a7a5e" style="transition-delay:.2s"/>
-              <text class="lab glab" x="6" y="136">PLATINUM-GROUP · trace catalysts</text>
-              <rect class="gbar" x="6" y="142" width="58" height="16" fill="#e9d27a" style="transition-delay:.3s"/>
-              <text class="axt glab" x="6" y="172">Earth export value of all of the above, near zero once delivered.</text>
+        <div class="viz">
+          <svg viewBox="0 0 360 360" data-fig aria-label="Water at the center, everything depends on it">
+            <!-- spokes -->
+            <g stroke="var(--water)" stroke-width="1.5" opacity="0.5">
+              <line class="draw" x1="180" y1="180" x2="180" y2="60"/>
+              <line class="draw" x1="180" y1="180" x2="284" y2="120" style="transition-delay:.1s"/>
+              <line class="draw" x1="180" y1="180" x2="284" y2="240" style="transition-delay:.2s"/>
+              <line class="draw" x1="180" y1="180" x2="180" y2="300" style="transition-delay:.3s"/>
+              <line class="draw" x1="180" y1="180" x2="76" y2="240" style="transition-delay:.4s"/>
+              <line class="draw" x1="180" y1="180" x2="76" y2="120" style="transition-delay:.5s"/>
             </g>
+            <!-- satellites -->
+            <g font-family="var(--mono)" font-size="10" fill="var(--muted)" text-anchor="middle">
+              <g class="grow"><circle cx="180" cy="60" r="26" fill="#0c1418" stroke="var(--water)"/><text x="180" y="58">propel-</text><text x="180" y="70">lant</text></g>
+              <g class="grow" style="transition-delay:.1s"><circle cx="284" cy="120" r="26" fill="#0c1418" stroke="var(--water)"/><text x="284" y="123">shield</text></g>
+              <g class="grow" style="transition-delay:.2s"><circle cx="284" cy="240" r="26" fill="#0c1418" stroke="var(--water)"/><text x="284" y="243">air</text></g>
+              <g class="grow" style="transition-delay:.3s"><circle cx="180" cy="300" r="26" fill="#0c1418" stroke="var(--water)"/><text x="180" y="303">crops</text></g>
+              <g class="grow" style="transition-delay:.4s"><circle cx="76" cy="240" r="26" fill="#0c1418" stroke="var(--water)"/><text x="76" y="243">drink</text></g>
+              <g class="grow" style="transition-delay:.5s"><circle cx="76" cy="120" r="26" fill="#0c1418" stroke="var(--water)"/><text x="76" y="123">fuel</text></g>
+            </g>
+            <!-- center -->
+            <circle class="grow" cx="180" cy="180" r="44" fill="var(--water)"/>
+            <text x="180" y="178" text-anchor="middle" font-family="var(--serif)" font-size="22" fill="#06222a">H₂O</text>
+            <text x="180" y="196" text-anchor="middle" font-family="var(--mono)" font-size="8" fill="#06222a">WATER</text>
           </svg>
-          <div class="cap">Flip the famous ranking upside down. The boring volatile at the top is the one that builds a spacefaring economy.</div>
         </div>
       </div>
     </section>
@@ -263,26 +240,13 @@
 
   <!-- caveats -->
   <section class="road">
-    <div class="num">07 — What if we're wrong</div>
+    <div class="num" style="font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)">07 — What if we're wrong</div>
     <h2>The honest edges of this argument.</h2>
-    <p style="max-width:62ch">A framework is only worth trusting if it names where it could fail. Four places this one might.</p>
     <div class="rgrid">
-      <div class="ritem">
-        <h3>In-space processing is immature</h3>
-        <p>Mining, melting, and electrolyzing an asteroid in microgravity has never been done at scale. The value only exists if the processing works, and that engineering is the real frontier, not the rock.</p>
-      </div>
-      <div class="ritem">
-        <h3>A niche Earth export might survive</h3>
-        <p>A small, genuinely scarce product (specific isotopes, ultra-pure samples for research) could justify return in tiny quantities. That is a curiosity business, not the trillion-dollar one.</p>
-      </div>
-      <div class="ritem">
-        <h3>Cheap launch cuts both ways</h3>
-        <p>If launch costs crater, the in-space premium shrinks too. But propellant is mostly mass, and mass is exactly what you most want to avoid launching, so water-in-orbit keeps its edge longest.</p>
-      </div>
-      <div class="ritem">
-        <h3>The timeline is decades</h3>
-        <p>None of this is a this-decade business. It is the architecture of a cislunar economy that has to be bootstrapped one depot at a time. We are arguing about direction, not a quarterly return.</p>
-      </div>
+      <div class="ritem"><h3>In-space processing is immature</h3><p>Mining and refining an asteroid in microgravity has never been done at scale. The value only exists if that engineering works, and that is the real frontier, not the rock.</p></div>
+      <div class="ritem"><h3>A niche Earth export might survive</h3><p>A genuinely scarce product returned in tiny amounts could pay. That is a curiosity business, not the trillion-dollar one.</p></div>
+      <div class="ritem"><h3>Cheap launch cuts both ways</h3><p>If launch costs crater, the in-space premium shrinks too. But propellant is mostly mass, the thing you most want to avoid launching, so water-in-orbit keeps its edge longest.</p></div>
+      <div class="ritem"><h3>The timeline is decades</h3><p>This is the architecture of a cislunar economy bootstrapped one depot at a time. We are arguing direction, not a quarterly return.</p></div>
     </div>
   </section>
 
@@ -302,34 +266,76 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
-// ambient backdrop: a slow field of resource motes (ice cyan, rock, metal sparks)
+
+// ---- ambient resource motes behind everything ----
 const cv=document.getElementById('scene');
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100); camera.position.set(0,0,6);
 const renderer=new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
 renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-function cloud(n, r, color, size){
-  const pos=new Float32Array(n*3);
-  for(let i=0;i<n;i++){ const u=Math.random(),v=Math.random(),th=2*Math.PI*u,ph=Math.acos(2*v-1),rr=r*Math.cbrt(Math.random());
-    pos[i*3]=rr*Math.sin(ph)*Math.cos(th); pos[i*3+1]=rr*Math.sin(ph)*Math.sin(th); pos[i*3+2]=rr*Math.cos(ph); }
-  const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  return new THREE.Points(g, new THREE.PointsMaterial({color, size, transparent:true, opacity:0.0, sizeAttenuation:true}));
-}
-const grp=new THREE.Group(); scene.add(grp);
-const ice=cloud(900,2.7,0x5ad1e6,0.022), rock=cloud(1400,2.6,0x6b7078,0.02), metal=cloud(60,2.4,0xffffff,0.05);
-grp.add(ice,rock,metal);
-let op=0;
-function loop(){
-  const t=performance.now();
-  const want = scrollY>innerHeight*0.4 ? 0.5 : 0.0; op += (want-op)*0.05;
-  ice.material.opacity=op*0.7; rock.material.opacity=op; metal.material.opacity=Math.min(1,op*1.8);
-  grp.rotation.y = t*0.00004; grp.rotation.x=-0.12;
-  renderer.render(scene,camera); requestAnimationFrame(loop);
-}
-loop();
+function cloud(n,r,color,size){ const p=new Float32Array(n*3);
+  for(let i=0;i<n;i++){const u=Math.random(),v=Math.random(),th=2*Math.PI*u,ph=Math.acos(2*v-1),rr=r*Math.cbrt(Math.random());
+    p[i*3]=rr*Math.sin(ph)*Math.cos(th);p[i*3+1]=rr*Math.sin(ph)*Math.sin(th);p[i*3+2]=rr*Math.cos(ph);}
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({color,size,transparent:true,opacity:0,sizeAttenuation:true})); }
+const amb=new THREE.Group(); scene.add(amb);
+const ice=cloud(700,2.7,0x5ad1e6,0.02), rock=cloud(1100,2.6,0x6b7078,0.018);
+amb.add(ice,rock);
+let ao=0;
+function ambLoop(){ const t=performance.now();
+  const want=scrollY>innerHeight*0.4?0.4:0; ao+=(want-ao)*0.05;
+  ice.material.opacity=ao*0.7; rock.material.opacity=ao;
+  amb.rotation.y=t*0.00004; amb.rotation.x=-0.1;
+  renderer.render(scene,camera); requestAnimationFrame(ambLoop); }
+ambLoop();
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
-const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); }), {threshold:0.3});
-document.querySelectorAll('[data-fig]').forEach(f=>io.observe(f));
+
+// ---- 02: real 3D gravity wells (deep Earth vs flat asteroid) ----
+function buildWell(){
+  const canvas=document.getElementById('well'); if(!canvas) return;
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(42,1,0.1,100); cam.position.set(0,3.0,5.4); cam.lookAt(0,-0.5,0);
+  const rn=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  const fit=()=>{ const w=canvas.clientWidth||innerWidth, h=canvas.clientHeight||innerHeight;
+    rn.setSize(w,h,false); rn.setPixelRatio(Math.min(devicePixelRatio,2)); cam.aspect=w/h; cam.updateProjectionMatrix(); };
+  function funnel(depth,cx,color){
+    const seg=44,size=2.7; const geo=new THREE.PlaneGeometry(size,size,seg,seg); geo.rotateX(-Math.PI/2);
+    const pos=geo.attributes.position;
+    for(let i=0;i<pos.count;i++){ const x=pos.getX(i),z=pos.getZ(i); const r=Math.sqrt(x*x+z*z);
+      pos.setY(i, Math.max(-depth/(r/0.5+0.34), -depth*1.7)); }
+    const wire=new THREE.LineSegments(new THREE.WireframeGeometry(geo), new THREE.LineBasicMaterial({color,transparent:true,opacity:0.55}));
+    wire.position.x=cx; sc.add(wire);
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(0.13,18,18), new THREE.MeshBasicMaterial({color:0xffffff}));
+    ball.position.set(cx, -depth*0.92, 0); sc.add(ball);
+  }
+  funnel(2.3,-1.55,0x6f8bd6);  // Earth: deep chasm
+  funnel(0.35,1.55,0x9aa0a8);  // asteroid: shallow dimple
+  let on=false;
+  new IntersectionObserver(es=>es.forEach(e=>on=e.isIntersecting),{threshold:0.05}).observe(canvas);
+  function loop(){ if(on){ fit(); sc.rotation.y=Math.sin(performance.now()*0.00018)*0.5; rn.render(sc,cam); } requestAnimationFrame(loop); }
+  loop();
+}
+try{ buildWell(); }catch(e){}
+
+// ---- reveal figures on scroll ----
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.closest('.pin')?.classList.add('in'); }),{threshold:0.25});
+document.querySelectorAll('[data-fig],[data-counter]').forEach(f=>io.observe(f));
+
+// ---- 01: betrayal counter (rockets up, then craters) ----
+const counterEl=document.getElementById('trap-num');
+function fmt(v){ if(v>=1e12) return '$'+(v/1e12).toFixed(1)+'T'; if(v>=1e9) return '$'+(v/1e9).toFixed(0)+'B';
+  if(v>=1e6) return '$'+(v/1e6).toFixed(1)+'M'; return '$'+Math.round(v).toLocaleString(); }
+let ran=false;
+new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting && !ran){ ran=true; run(); }}),{threshold:0.6}).observe(counterEl);
+function run(){ const up=1700,hold=650,crash=750,peak=75.7e12,floorV=0.7e6,t0=performance.now();
+  function frame(now){ const e=now-t0; let v;
+    if(e<up){ const k=e/up; v=peak*k*k; }
+    else if(e<up+hold){ v=peak; }
+    else if(e<up+hold+crash){ const k=(e-up-hold)/crash; v=Math.max(floorV, peak*(1-k)*(1-k)); counterEl.classList.add('crash'); }
+    else { counterEl.textContent=fmt(floorV); return; }
+    counterEl.textContent=fmt(v); requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
+}
 </script>
 </body>
 </html>
