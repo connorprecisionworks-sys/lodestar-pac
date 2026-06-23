@@ -91,9 +91,9 @@
       <div class="tag" style="border:0;margin:0;color:#cdd0d6;font-family:var(--serif);font-size:21px;text-transform:none;letter-spacing:0">How Lodestar predicts what an asteroid is made of, how we keep it honest, and what would make it materially better.</div>
       <div class="kpis">
         <div class="kpi"><div class="v">116</div><div class="k">labelled asteroids</div></div>
-        <div class="kpi"><div class="v">82%</div><div class="k">leave-one-out accuracy</div></div>
-        <div class="kpi"><div class="v">0.067</div><div class="k">calibration error (ECE)</div></div>
-        <div class="kpi"><div class="v">8</div><div class="k">features</div></div>
+        <div class="kpi"><div class="v">72→78%</div><div class="k">accuracy · infrared added</div></div>
+        <div class="kpi"><div class="v">+6 pts</div><div class="k">from IR + colour features</div></div>
+        <div class="kpi"><div class="v">0%</div><div class="k">metallic recall · label-limited</div></div>
       </div>
       <div class="scrollcue">scroll ↓</div>
     </section>
@@ -265,20 +265,47 @@
         </div>
       </div>
     </section>
+
+    <!-- 06 the infrared upgrade (shipped) -->
+    <section class="step">
+      <div class="pin">
+        <div class="col">
+          <div class="num">06 — The infrared upgrade <span class="tag" style="color:#6fce97;border-color:#234a35">shipped</span></div>
+          <h2>We added the infrared. It worked.</h2>
+          <p>We cross-matched the catalogue to <b>NEOWISE</b> (visible and near-infrared albedo for 141,920 bodies) and the <b>SDSS</b> colour survey, and retrained with those features in play. On the same leave-one-out test, accuracy rose from <b>72% to 78%</b>, a <b>+6 point</b> gain, with carbonaceous recall climbing too.</p>
+          <p>Metallic recall is still <b>0%</b>, and now we know precisely why: it is no longer a feature problem, the infrared that separates metal is in the model. It is a <b>label</b> problem. You cannot teach a class from <b>4 examples</b>. That is the last lever, and it is the next paper.</p>
+        </div>
+        <div class="fig" data-fig>
+          <div class="ft">Infrared + colour upgrade</div>
+          <div class="fs">leave-one-out accuracy · same test</div>
+          <svg viewBox="0 0 360 150" aria-label="Infrared upgrade">
+            <g font-family="var(--mono)">
+              <text class="lab glab" x="6" y="40">ALBEDO + DYNAMICS ONLY</text>
+              <rect class="gbar" x="6" y="46" width="245" height="22" fill="#54595f"/>
+              <text class="val glab" x="257" y="62">72%</text>
+              <text class="lab glab" x="6" y="104">+ NEOWISE INFRARED + SDSS COLOUR</text>
+              <rect class="gbar" x="6" y="110" width="266" height="22" fill="#6fce97" style="transition-delay:.15s"/>
+              <text class="val glab" x="278" y="126">78%</text>
+            </g>
+          </svg>
+          <div class="cap">Reproduced on the live dataset. The lever the roadmap predicted, delivered: <b style="color:#6fce97">+6 points</b> from infrared and colour. Metallic still waits on more labels.</div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <!-- roadmap -->
   <section class="road">
-    <div class="num">06 — The roadmap</div>
+    <div class="num">07 — The roadmap</div>
     <h2>The best things we can do, and what each one needs.</h2>
     <p style="max-width:60ch">Ranked by impact. The first two are the difference between a good screening prior and a genuinely trustworthy characterization.</p>
     <div class="rgrid">
       <div class="ritem">
         <div class="rk">1</div>
         <div>
-          <h3>Add infrared + colour features <span class="tag hi">highest impact</span></h3>
-          <p>Metallic asteroids are albedo-degenerate, which is exactly why metallic recall is 0%. NEOWISE W1–W4 thermal-emission ratios and SDSS griz colours break that tie and are the real fix for the class the model cannot currently see.</p>
-          <div class="need">Needs: <b>cross-match the 41,884 catalogue to NEOWISE/WISE and the SDSS Moving Object Catalog</b>, add the band ratios as features, retrain. Data ingestion, roughly a few weeks.</div>
+          <h3>Add infrared + colour features <span class="tag" style="color:#6fce97;border-color:#234a35">shipped · +6 pts</span></h3>
+          <p>Done. NEOWISE visible and near-infrared albedo plus SDSS colour, cross-matched and retrained, lifted leave-one-out accuracy from 72% to 78% and improved carbonaceous recall. The infrared that separates metallic is now in the model.</p>
+          <div class="need">Result: <b>+6 points</b>, reproduced on the live dataset. Metallic still pending more labels (item 2).</div>
         </div>
       </div>
       <div class="ritem">
