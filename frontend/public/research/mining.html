@@ -278,14 +278,23 @@ function cloud(n,r,color,size){ const p=new Float32Array(n*3);
     p[i*3]=rr*Math.sin(ph)*Math.cos(th);p[i*3+1]=rr*Math.sin(ph)*Math.sin(th);p[i*3+2]=rr*Math.cos(ph);}
   const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3));
   return new THREE.Points(g,new THREE.PointsMaterial({color,size,transparent:true,opacity:0,sizeAttenuation:true})); }
+function ring(rad,color){ const pts=[]; for(let i=0;i<=160;i++){const a=i/160*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*rad,0,Math.sin(a)*rad));}
+  const g=new THREE.BufferGeometry().setFromPoints(pts);
+  return new THREE.LineLoop(g,new THREE.LineBasicMaterial({color,transparent:true,opacity:0})); }
 const amb=new THREE.Group(); scene.add(amb);
-const ice=cloud(700,2.7,0x5ad1e6,0.02), rock=cloud(1100,2.6,0x6b7078,0.018);
-amb.add(ice,rock);
+const rock=cloud(1300,2.8,0x6b7078,0.017), ice=cloud(620,2.7,0x5ad1e6,0.02), twk=cloud(150,2.9,0xbfe6f2,0.045);
+const r1=ring(2.15,0x475a7a), r2=ring(2.8,0x394764), r3=ring(3.45,0x2c3650);
+r1.rotation.x=0.5; r2.rotation.x=-0.7; r3.rotation.x=0.18;
+amb.add(rock,ice,twk,r1,r2,r3);
 let ao=0;
+// alive from load (the hero), calm enough to leave on screen
 function ambLoop(){ const t=performance.now();
-  const want=scrollY>innerHeight*0.4?0.4:0; ao+=(want-ao)*0.05;
-  ice.material.opacity=ao*0.7; rock.material.opacity=ao;
-  amb.rotation.y=t*0.00004; amb.rotation.x=-0.1;
+  ao+=(0.5-ao)*0.018;
+  rock.material.opacity=ao*0.65; ice.material.opacity=ao*0.5;
+  twk.material.opacity=ao*(0.55+0.4*Math.sin(t*0.0009)); // gentle breathing shimmer
+  r1.material.opacity=ao*0.42; r2.material.opacity=ao*0.34; r3.material.opacity=ao*0.26;
+  amb.rotation.y=t*0.00005; amb.rotation.x=-0.12+Math.sin(t*0.00018)*0.05; // slow sway
+  r1.rotation.z=t*0.00007; r2.rotation.z=-t*0.000055; r3.rotation.z=t*0.00004;
   renderer.render(scene,camera); requestAnimationFrame(ambLoop); }
 ambLoop();
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
