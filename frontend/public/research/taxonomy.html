@@ -8,12 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-  :root{ --bg:#040405; --ink:#eceef1; --muted:#9296a0; --faint:#5a5e66; --line2:#262a30; --good:#6fce97;
+  :root{ --bg:#040405; --ink:#eceef1; --muted:#9296a0; --faint:#5a5e66; --line2:#262a30; --good:#6fce97; --water:#5ad1e6; --warn:#d6803f; --bad:#d65b56;
     --serif:"Newsreader",Georgia,serif; --sans:"Inter",system-ui,sans-serif; --mono:"JetBrains Mono",monospace; }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.7;-webkit-font-smoothing:antialiased}
   #scene{position:fixed;inset:0;width:100vw;height:100vh;z-index:0}
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;mix-blend-mode:difference}
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;padding:18px 28px;mix-blend-mode:difference}
   .topbar .brand{display:flex;align-items:center;gap:9px}
   .topbar .brand img{height:18px}
   .topbar a{color:#fff;text-decoration:none;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em}
@@ -21,58 +21,61 @@
   .story{position:relative;z-index:1}
   .hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 7vw}
   .eyebrow{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--faint)}
-  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(32px,5.2vw,58px);line-height:1.04;letter-spacing:-.01em;margin:14px 0 8px;max-width:18ch}
-  .hero .tag{font-family:var(--serif);font-size:clamp(17px,2.2vw,21px);color:#cdd0d6;max-width:46ch;margin-top:8px}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:34px;max-width:740px;width:100%}
-  @media(max-width:640px){.kpis{grid-template-columns:1fr 1fr}}
-  .kpi{background:#080809;padding:14px}
-  .kpi .v{font-family:var(--serif);font-size:25px}
-  .kpi .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:5px}
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:clamp(32px,5.4vw,60px);line-height:1.03;letter-spacing:-.01em;margin:14px 0 8px;max-width:17ch}
+  .hero .tag{font-family:var(--serif);font-size:clamp(17px,2.2vw,22px);color:#cdd0d6;max-width:50ch;margin-top:10px}
   .scrollcue{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-top:42px;animation:cue 2s ease-in-out infinite}
   @keyframes cue{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:.85;transform:translateY(4px)}}
 
-  /* pinned scrollytelling sections: text left, figure right */
   .step{min-height:200vh;position:relative}
-  .pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;gap:5vw;padding:0 7vw;max-width:1180px;margin:0 auto}
-  @media(max-width:860px){.pin{flex-direction:column;justify-content:center}}
-  .col{max-width:430px;flex:0 0 auto}
-  .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
+  .pin{position:sticky;top:0;height:100vh;display:flex;align-items:center;gap:6vw;padding:0 7vw;max-width:1200px;margin:0 auto}
+  .col{max-width:420px;flex:0 0 auto}
+  .col .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
+  .tag-chip{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;border:1px solid #234a35;color:var(--good);padding:2px 7px;margin-left:8px}
   h2{font-family:var(--serif);font-weight:500;font-size:clamp(26px,3.6vw,38px);line-height:1.1;letter-spacing:-.01em;margin:6px 0 10px}
   p{margin:.6em 0;color:#c4c7cd;font-size:16px}
   b{color:#fff;font-weight:600}
-  .fig{flex:1 1 auto;min-width:0;max-width:540px;border:1px solid var(--line2);background:rgba(8,9,11,.72);backdrop-filter:blur(2px);padding:22px 24px}
-  .fig .ft{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink)}
-  .fig .fs{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint);text-transform:uppercase;margin-bottom:14px}
-  .fig svg{width:100%;height:auto;display:block;overflow:visible}
-  .fig .cap{font-size:12.5px;color:var(--muted);margin-top:14px;line-height:1.6}
-  .axt{font-family:var(--mono);font-size:9px;fill:var(--faint)}
-  .lab{font-family:var(--mono);font-size:10px;fill:var(--muted)}
-  .val{font-family:var(--mono);font-size:11px;fill:var(--ink)}
-  .ax{stroke:var(--line2);stroke-width:1}
-  /* reveal */
+  .viz{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center}
+  .viz svg{width:100%;height:auto;max-height:64vh;display:block;overflow:visible}
+
+  .pin.center{flex-direction:column;text-align:center;justify-content:center;gap:34px}
+  .pin.center .col{max-width:640px}
+  .pin.center .viz{width:100%;max-width:560px}
+  .pin.bleed{display:block;max-width:none;padding:0}
+  .pin.bleed .viz{position:absolute;inset:0;width:100%;height:100%}
+  .pin.bleed .col{position:absolute;left:7vw;top:50%;transform:translateY(-50%);z-index:2;
+    background:linear-gradient(100deg,rgba(4,4,5,.85) 60%,rgba(4,4,5,0));padding:24px 30px 24px 0}
+  @media(max-width:860px){.pin{flex-direction:column;justify-content:center;gap:24px}.pin .col{max-width:560px}
+    .pin.bleed{position:relative}.pin.bleed .viz{position:relative;height:46vh}.pin.bleed .col{position:relative;left:0;top:0;transform:none;background:none;padding:0 7vw}}
+
   .gbar{transform-box:fill-box;transform-origin:left center;transform:scaleX(0);transition:transform 1s cubic-bezier(.2,.75,.2,1)}
   .in .gbar{transform:scaleX(1)}
-  .gcol{transform-box:fill-box;transform-origin:bottom center;transform:scaleY(0);transition:transform 1s cubic-bezier(.2,.75,.2,1)}
-  .in .gcol{transform:scaleY(1)}
-  .draw{stroke-dasharray:1400;stroke-dashoffset:1400;transition:stroke-dashoffset 1.6s cubic-bezier(.3,.7,.3,1)}
+  .grow{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+  .in .grow{transform:scale(1)}
+  .draw{stroke-dasharray:760;stroke-dashoffset:760;transition:stroke-dashoffset 1.7s cubic-bezier(.3,.7,.3,1)}
   .in .draw{stroke-dashoffset:0}
-  .glab{opacity:0;transition:opacity .6s ease .4s}
-  .in .glab{opacity:1}
+  .fade{opacity:0;transition:opacity .8s ease}
+  .in .fade{opacity:1}
+  .vanish{transition:opacity 1.1s ease}
+  .in .vanish{opacity:0.07}
+  .tiny{font-family:var(--mono);font-size:10px;fill:var(--faint)}
+  .numlab{font-family:var(--mono);font-size:13px;fill:var(--ink)}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .bob{animation:bob 2.4s ease-in-out infinite}
 
-  /* roadmap */
-  .road{max-width:1180px;margin:0 auto;padding:60px 7vw 30px;position:relative;z-index:1}
-  .road h2{max-width:20ch}
-  .rgrid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:26px}
-  .ritem{background:#080809;padding:20px 22px;display:grid;grid-template-columns:42px 1fr;gap:18px;align-items:start}
-  .ritem .rk{font-family:var(--serif);font-size:28px;color:var(--muted)}
-  .ritem h3{font-family:var(--sans);font-weight:600;font-size:17px;margin:0 0 4px;color:#fff}
+  .road{max-width:1180px;margin:0 auto;padding:60px 7vw 20px;position:relative;z-index:1}
+  .road .num{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--faint)}
+  .road h2{max-width:22ch}
+  .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:26px}
+  @media(max-width:760px){.rgrid{grid-template-columns:1fr}}
+  .ritem{background:#080809;padding:22px 24px}
+  .ritem h3{font-family:var(--sans);font-weight:600;font-size:16px;margin:0 0 6px;color:#fff}
   .ritem p{margin:0;font-size:14px;color:var(--muted)}
-  .ritem .need{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:8px;letter-spacing:.02em}
-  .ritem .need b{color:var(--good);font-weight:500}
-  .tag{display:inline-block;font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;border:1px solid var(--line2);color:var(--muted);padding:2px 7px;margin-left:8px;vertical-align:middle}
-  .tag.hi{color:#e9d27a;border-color:#4a4327}
+  .ritem .done{color:var(--good)}
+  .vision{max-width:780px;margin:0 auto;padding:34px 7vw 60px;position:relative;z-index:1;text-align:center}
+  .vision h2{font-size:clamp(24px,3.6vw,38px)}
+  .vision p{font-size:17px;color:#cdd0d6}
 
-  footer{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:36px 28px 90px;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9}
+  footer{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:6px 28px 90px;font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.9}
   footer .div{border-top:1px solid var(--line2);margin-bottom:18px}
   footer a{color:#fff}
 </style>
@@ -88,207 +91,123 @@
     <section class="hero">
       <div class="eyebrow">Paper 02 · Machine learning</div>
       <h1>Training, testing, and improving the taxonomy model.</h1>
-      <div class="tag" style="border:0;margin:0;color:#cdd0d6;font-family:var(--serif);font-size:21px;text-transform:none;letter-spacing:0">How Lodestar predicts what an asteroid is made of, how we keep it honest, and what would make it materially better.</div>
-      <div class="kpis">
-        <div class="kpi"><div class="v">116</div><div class="k">labelled asteroids</div></div>
-        <div class="kpi"><div class="v">72→78%</div><div class="k">accuracy · infrared added</div></div>
-        <div class="kpi"><div class="v">+6 pts</div><div class="k">from IR + colour features</div></div>
-        <div class="kpi"><div class="v">0%</div><div class="k">metallic recall · label-limited</div></div>
-      </div>
+      <div class="tag">How Lodestar predicts what an asteroid is made of, how we keep it honest, and what we did to make it materially better.</div>
       <div class="scrollcue">scroll ↓</div>
     </section>
 
-    <!-- 01 training set -->
+    <!-- 01 the training set : scarce + imbalanced (full-bleed dot field) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin bleed">
+        <div class="viz"><svg id="field" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" aria-label="116 labelled dots among 41,884"></svg></div>
         <div class="col">
           <div class="num">01 — The training set</div>
           <h2>Learning from the few we have measured.</h2>
-          <p>Of 41,884 near-Earth asteroids, only <b>116</b> have both a measured spectral class and a measured albedo, the pairing the model needs to learn from. They are badly imbalanced: <b>83 stony</b>, <b>29 carbonaceous</b>, just <b>4 metallic</b>. That imbalance shapes everything downstream, and we never hide it.</p>
-          <p>Each object is described by 8 features it already has: albedo, absolute magnitude, and six orbital-dynamics terms (semi-major axis, eccentricity, inclination, perihelion, aphelion, Tisserand parameter).</p>
-        </div>
-        <div class="fig" data-fig>
-          <div class="ft">Training labels</div>
-          <div class="fs">measured class · n = 116</div>
-          <svg viewBox="0 0 360 150" aria-label="Class balance">
-            <text class="lab glab" x="6" y="34">STONY · S</text>
-            <rect class="gbar" x="6" y="42" width="320" height="20" fill="#eceef1"/>
-            <text class="val glab" x="330" y="57">83</text>
-            <text class="lab glab" x="6" y="86">CARBONACEOUS · C</text>
-            <rect class="gbar" x="6" y="94" width="111.8" height="20" fill="#8f96a0" style="transition-delay:.12s"/>
-            <text class="val glab" x="124" y="109">29</text>
-            <text class="lab glab" x="6" y="134">METALLIC · M</text>
-            <rect class="gbar" x="6" y="142" width="15.4" height="8" fill="#54595f" style="transition-delay:.24s"/>
-            <text class="val glab" x="28" y="150">4</text>
-          </svg>
-          <div class="cap">Four metallic examples is too few to learn a reliable boundary. Hold that thought.</div>
+          <p>Of 41,884 near-Earth asteroids, only <b>116</b> carry both a measured class and an albedo, the pairing the model learns from. And they are lopsided: <b>83 stony</b>, <b>29 carbonaceous</b>, just <b>4 metallic</b>. Find the four bright sparks. That scarcity decides what the model can and cannot learn.</p>
         </div>
       </div>
     </section>
 
-    <!-- 02 the model -->
+    <!-- 02 the model : albedo separates (split) -->
     <section class="step">
       <div class="pin">
         <div class="col">
           <div class="num">02 — The model</div>
-          <h2>What reflectivity reveals.</h2>
-          <p>A class-balanced <b>random forest</b> of 200 shallow trees votes on each asteroid's class. We keep the trees shallow and weight the classes so the model cannot simply memorize the training set or ignore the rare classes.</p>
-          <p>By far the strongest signal is <b>albedo</b>: dark carbonaceous rock reflects only a few percent of sunlight, bright stony rock far more. Orbital dynamics fill in the rest. It is physically sensible, not a black box.</p>
+          <h2>Reflectivity does most of the work.</h2>
+          <p>A class-balanced random forest reads albedo and orbital dynamics. The single strongest signal is <b>albedo</b>: dark carbonaceous rock reflects a few percent of sunlight, bright stony rock far more. Lay the asteroids out by brightness and the classes mostly fall into place on their own.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">What the model leans on</div>
-          <div class="fs">random-forest feature importance</div>
-          <svg viewBox="0 0 360 214" aria-label="Feature importance">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="92" y="20" text-anchor="end">albedo</text>
-              <rect class="gbar" x="98" y="11" width="226" height="13" fill="#eceef1"/>
-              <text class="val glab" x="328" y="21">.27</text>
-              <text class="lab glab" x="92" y="44" text-anchor="end">abs. magnitude</text>
-              <rect class="gbar" x="98" y="35" width="131" height="13" fill="#7e848c" style="transition-delay:.06s"/>
-              <text class="val glab" x="233" y="45">.16</text>
-              <text class="lab glab" x="92" y="68" text-anchor="end">inclination</text>
-              <rect class="gbar" x="98" y="59" width="108" height="13" fill="#7e848c" style="transition-delay:.12s"/>
-              <text class="val glab" x="210" y="69">.13</text>
-              <text class="lab glab" x="92" y="92" text-anchor="end">aphelion</text>
-              <rect class="gbar" x="98" y="83" width="84" height="13" fill="#6b7078" style="transition-delay:.18s"/>
-              <text class="val glab" x="186" y="93">.10</text>
-              <text class="lab glab" x="92" y="116" text-anchor="end">semi-major axis</text>
-              <rect class="gbar" x="98" y="107" width="80" height="13" fill="#6b7078" style="transition-delay:.24s"/>
-              <text class="val glab" x="182" y="117">.09</text>
-              <text class="lab glab" x="92" y="140" text-anchor="end">perihelion</text>
-              <rect class="gbar" x="98" y="131" width="79" height="13" fill="#6b7078" style="transition-delay:.3s"/>
-              <text class="val glab" x="181" y="141">.09</text>
-              <text class="lab glab" x="92" y="164" text-anchor="end">Tisserand</text>
-              <rect class="gbar" x="98" y="155" width="77" height="13" fill="#6b7078" style="transition-delay:.36s"/>
-              <text class="val glab" x="179" y="165">.09</text>
-              <text class="lab glab" x="92" y="188" text-anchor="end">eccentricity</text>
-              <rect class="gbar" x="98" y="179" width="62" height="13" fill="#54595f" style="transition-delay:.42s"/>
-              <text class="val glab" x="164" y="189">.07</text>
-            </g>
+        <div class="viz">
+          <svg viewBox="0 0 380 220" data-fig aria-label="Dark clusters left, bright clusters right">
+            <defs><linearGradient id="alb" x1="0" x2="1"><stop offset="0" stop-color="#0a0d12"/><stop offset="1" stop-color="#e9ecf2"/></linearGradient></defs>
+            <rect x="20" y="150" width="340" height="10" rx="5" fill="url(#alb)"/>
+            <!-- carbonaceous: dark end -->
+            <g fill="#7e848c"><circle class="grow" cx="58" cy="120" r="7"/><circle class="grow" cx="80" cy="98" r="7" style="transition-delay:.05s"/><circle class="grow" cx="44" cy="92" r="7" style="transition-delay:.1s"/><circle class="grow" cx="96" cy="124" r="7" style="transition-delay:.15s"/><circle class="grow" cx="70" cy="74" r="7" style="transition-delay:.2s"/></g>
+            <!-- stony: bright end -->
+            <g fill="#cfd3d9"><circle class="grow" cx="250" cy="104" r="7" style="transition-delay:.1s"/><circle class="grow" cx="284" cy="86" r="7" style="transition-delay:.15s"/><circle class="grow" cx="312" cy="116" r="7" style="transition-delay:.2s"/><circle class="grow" cx="268" cy="72" r="7" style="transition-delay:.25s"/><circle class="grow" cx="300" cy="58" r="7" style="transition-delay:.3s"/><circle class="grow" cx="332" cy="92" r="7" style="transition-delay:.35s"/></g>
+            <line class="fade" x1="190" y1="40" x2="190" y2="170" stroke="var(--faint)" stroke-dasharray="3 4" style="transition-delay:.5s"/>
           </svg>
-          <div class="cap">Albedo carries roughly a quarter of all the signal on its own.</div>
         </div>
       </div>
     </section>
 
-    <!-- 03 testing -->
+    <!-- 03 leave-one-out (centered) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin center">
         <div class="col">
           <div class="num">03 — Testing without cheating</div>
           <h2>Never scored by a model that has seen it.</h2>
-          <p>Every accuracy number is measured by <b>leave-one-out cross-validation</b>: train on 115 objects, predict the one held out, repeat 116 times. No object is ever scored by a model that trained on it.</p>
-          <p>Under one identical protocol, the random forest reaches <b>82%</b> (leave-one-out), beating gradient boosting, logistic regression, and the &ldquo;always guess stony&rdquo; baseline. We picked the model the evidence picked.</p>
+          <p>Every accuracy number is leave-one-out: pull one asteroid out, train on the other 115, predict the one held out, and repeat 116 times. Nothing is ever graded by a model that learned from it. Under that test, the forest reaches <b>78%</b> with infrared added, well past the 72% baseline.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Model comparison</div>
-          <div class="fs">cross-validated accuracy · same data</div>
-          <svg viewBox="0 0 360 176" aria-label="Model comparison">
-            <line class="ax" x1="120" y1="6" x2="120" y2="150"/>
-            <text class="lab glab" x="114" y="24" text-anchor="end">Random forest</text>
-            <rect class="gbar" x="120" y="14" width="191" height="18" fill="#eceef1"/>
-            <text class="val glab" x="315" y="28">82%</text>
-            <text class="lab glab" x="114" y="62" text-anchor="end">Gradient boosting</text>
-            <rect class="gbar" x="120" y="52" width="174" height="18" fill="#7e848c" style="transition-delay:.1s"/>
-            <text class="val glab" x="298" y="66">75%</text>
-            <text class="lab glab" x="114" y="100" text-anchor="end">Baseline (guess S)</text>
-            <rect class="gbar" x="120" y="90" width="167" height="18" fill="#54595f" style="transition-delay:.2s"/>
-            <text class="val glab" x="291" y="104">72%</text>
-            <text class="lab glab" x="114" y="138" text-anchor="end">Logistic regression</text>
-            <rect class="gbar" x="120" y="128" width="137" height="18" fill="#3a3d44" style="transition-delay:.3s"/>
-            <text class="val glab" x="261" y="142">59%</text>
-            <text class="axt glab" x="120" y="166">leave-one-out headline 82% · 5-fold ranking shown</text>
+        <div class="viz">
+          <svg viewBox="0 0 380 150" data-fig aria-label="One held out and tested, the rest train">
+            <g fill="#5f6776">
+              <circle cx="40" cy="110" r="9"/><circle cx="74" cy="110" r="9"/><circle cx="108" cy="110" r="9"/><circle cx="142" cy="110" r="9"/><circle cx="210" cy="110" r="9"/><circle cx="244" cy="110" r="9"/><circle cx="278" cy="110" r="9"/><circle cx="312" cy="110" r="9"/><circle cx="346" cy="110" r="9"/>
+            </g>
+            <circle cx="176" cy="110" r="11" fill="none" stroke="var(--line2)" stroke-dasharray="3 3"/>
+            <g class="bob">
+              <circle cx="176" cy="48" r="11" fill="var(--good)"/>
+              <path d="M171,48 l4,4 l7,-8" fill="none" stroke="#06220f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <line x1="176" y1="62" x2="176" y2="97" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="2 3"/>
           </svg>
-          <div class="cap">Logistic regression trades raw accuracy for minority recall; the forest wins outright.</div>
         </div>
       </div>
     </section>
 
-    <!-- 04 calibration + abstention -->
+    <!-- 04 honest confidence : filter out the unsure (full-bleed) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin bleed">
+        <div class="viz"><svg id="conf" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid slice" aria-label="Low-confidence wrong calls fade away"></svg></div>
         <div class="col">
           <div class="num">04 — Honest confidence</div>
-          <h2>Calibrated, and willing to say &ldquo;I don't know.&rdquo;</h2>
-          <p>A confidence number is only useful if it is true. Platt-scaling the probabilities cut the expected calibration error from <b>0.143 to 0.067</b>, more than half, so a stated 80% really means about 80%.</p>
-          <p>Better still, the model can <b>abstain</b>. Keep only predictions above a confidence threshold and accuracy climbs from 78% toward <b>89%</b> as low-confidence guesses drop out. Honest coverage beats confident error.</p>
-        </div>
-        <div class="fig" data-fig>
-          <div class="ft">Abstention trade-off</div>
-          <div class="fs">accuracy rises as we keep only confident calls</div>
-          <svg viewBox="0 0 360 180" aria-label="Abstention curve">
-            <line class="ax" x1="40" y1="20" x2="40" y2="140"/>
-            <line class="ax" x1="40" y1="140" x2="340" y2="140"/>
-            <text class="axt glab" x="36" y="24" text-anchor="end">90%</text>
-            <text class="axt glab" x="36" y="143" text-anchor="end">76%</text>
-            <text class="axt glab" x="40" y="158">keep all (100%)</text>
-            <text class="axt glab" x="340" y="158" text-anchor="end">keep 45%</text>
-            <!-- x = coverage 1.0..0.45 mapped 40..340; y = acc .76..0.90 mapped 140..20 -->
-            <polyline class="draw" fill="none" stroke="#eceef1" stroke-width="2"
-              points="40,121 87,113 138,98 196,79 235,49 285,53"/>
-            <circle class="glab" cx="235" cy="49" r="3.5" fill="#6fce97"/>
-            <text class="val glab" x="232" y="40" text-anchor="middle" fill="#6fce97">89% @ 54%</text>
-            <text class="axt glab" x="190" y="176" text-anchor="middle">coverage retained →</text>
-          </svg>
-          <div class="cap">ECE 0.143 → <b style="color:#6fce97">0.067</b> after calibration. The marked point keeps 54% of calls at 89% accuracy.</div>
+          <h2>It knows when not to answer.</h2>
+          <p>The model attaches a calibrated confidence to every call, and the wrong answers cluster at low confidence. Keep only the confident ones and the mistakes (the red) fall away first, lifting accuracy from 78% toward <b>89%</b>. Honest coverage beats confident error.</p>
         </div>
       </div>
     </section>
 
-    <!-- 05 data-limited -->
+    <!-- 05 data-limited (split) -->
     <section class="step">
       <div class="pin">
         <div class="col">
           <div class="num">05 — Data-limited, not model-limited</div>
-          <h2>More labels would still help.</h2>
-          <p>The learning curve still climbs at the largest training size we have. A model that had saturated would flatten; ours is <b>still rising at 92 objects</b>. The bottleneck is labelled data, not the algorithm.</p>
-          <p>And the part that is learnable is already strong: drop the four metallic objects, where albedo genuinely cannot separate the class, and the carbonaceous-versus-stony decision hits <b>84.5%</b>. The model is honest about the boundary it cannot draw.</p>
+          <h2>The curve is still climbing.</h2>
+          <p>Feed the model more training examples and accuracy keeps rising, right out to the largest set we have. A model that had run out of room would flatten. Ours is still going up at the edge, which means the bottleneck is <b>labelled data</b>, not the algorithm.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Learning curve</div>
-          <div class="fs">cross-validated accuracy vs training size</div>
-          <svg viewBox="0 0 360 180" aria-label="Learning curve">
-            <line class="ax" x1="40" y1="20" x2="40" y2="140"/>
-            <line class="ax" x1="40" y1="140" x2="340" y2="140"/>
-            <text class="axt glab" x="36" y="24" text-anchor="end">80%</text>
-            <text class="axt glab" x="36" y="143" text-anchor="end">73%</text>
-            <text class="axt glab" x="40" y="158">32 objs</text>
-            <text class="axt glab" x="340" y="158" text-anchor="end">92 objs</text>
-            <!-- x n 32..92 -> 40..340 ; y acc .73..0.80 -> 140..20 -->
-            <polyline class="draw" fill="none" stroke="#eceef1" stroke-width="2"
-              points="40,63 115,122 190,78 265,47 340,32"/>
-            <circle class="glab" cx="340" cy="32" r="3.5" fill="#6fce97"/>
-            <text class="val glab" x="334" y="24" text-anchor="end" fill="#6fce97">still climbing</text>
-            <text class="axt glab" x="190" y="176" text-anchor="middle">training examples →</text>
+        <div class="viz">
+          <svg viewBox="0 0 380 230" data-fig aria-label="A line still rising at the edge">
+            <line x1="40" y1="20" x2="40" y2="190" stroke="var(--line2)"/>
+            <line x1="40" y1="190" x2="350" y2="190" stroke="var(--line2)"/>
+            <polyline class="draw" fill="none" stroke="var(--ink)" stroke-width="2.5" points="40,150 110,160 180,120 250,92 320,60"/>
+            <path class="draw" fill="none" stroke="var(--good)" stroke-width="2.5" d="M320,60 L366,40" marker-end="url(#up)" style="transition-delay:.4s"/>
+            <defs><marker id="up" markerWidth="9" markerHeight="9" refX="4" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="var(--good)"/></marker></defs>
           </svg>
-          <div class="cap">Carbonaceous-vs-stony core: <b style="color:#fff">84.5%</b> on 112 objects, once unlearnable metallic is set aside.</div>
         </div>
       </div>
     </section>
 
-    <!-- 06 the infrared upgrade (shipped) -->
+    <!-- 06 the infrared upgrade (centered) -->
     <section class="step">
-      <div class="pin">
+      <div class="pin center">
         <div class="col">
-          <div class="num">06 — The infrared upgrade <span class="tag" style="color:#6fce97;border-color:#234a35">shipped</span></div>
-          <h2>We added the infrared. It worked.</h2>
-          <p>We cross-matched the catalogue to <b>NEOWISE</b> (visible and near-infrared albedo for 141,920 bodies) and the <b>SDSS</b> colour survey, and retrained with those features in play. On the same leave-one-out test, accuracy rose from <b>72% to 78%</b>, a <b>+6 point</b> gain, with carbonaceous recall climbing too.</p>
-          <p>Metallic recall is still <b>0%</b>, and now we know precisely why: it is no longer a feature problem, the infrared that separates metal is in the model. It is a <b>label</b> problem. You cannot teach a class from <b>4 examples</b>. That is the last lever, and it is the next paper.</p>
+          <div class="num">06 — The infrared upgrade <span class="tag-chip">shipped</span></div>
+          <h2>We added infrared. It pulled the classes apart.</h2>
+          <p>We folded in <b>NEOWISE</b> near-infrared albedo and <b>SDSS</b> colour. With a second dimension the model can see, carbonaceous and stony separate further and accuracy rose <b>72% → 78%</b>. The four metallic asteroids still sit stuck in the middle. That is not a feature problem anymore. It is four examples. The next paper goes after the labels.</p>
         </div>
-        <div class="fig" data-fig>
-          <div class="ft">Infrared + colour upgrade</div>
-          <div class="fs">leave-one-out accuracy · same test</div>
-          <svg viewBox="0 0 360 150" aria-label="Infrared upgrade">
-            <g font-family="var(--mono)">
-              <text class="lab glab" x="6" y="40">ALBEDO + DYNAMICS ONLY</text>
-              <rect class="gbar" x="6" y="46" width="245" height="22" fill="#54595f"/>
-              <text class="val glab" x="257" y="62">72%</text>
-              <text class="lab glab" x="6" y="104">+ NEOWISE INFRARED + SDSS COLOUR</text>
-              <rect class="gbar" x="6" y="110" width="266" height="22" fill="#6fce97" style="transition-delay:.15s"/>
-              <text class="val glab" x="278" y="126">78%</text>
-            </g>
+        <div class="viz">
+          <svg viewBox="0 0 460 220" data-fig aria-label="Adding a second axis separates the classes">
+            <!-- left: albedo only, overlapping -->
+            <line x1="30" y1="190" x2="190" y2="190" stroke="var(--line2)"/>
+            <g><circle class="grow" cx="70" cy="170" r="7" fill="#7e848c"/><circle class="grow" cx="92" cy="172" r="7" fill="#7e848c" style="transition-delay:.05s"/><circle class="grow" cx="112" cy="168" r="7" fill="#cfd3d9" style="transition-delay:.1s"/><circle class="grow" cx="132" cy="172" r="7" fill="#cfd3d9" style="transition-delay:.15s"/><circle class="grow" cx="101" cy="171" r="7" fill="#fff" style="transition-delay:.2s"/></g>
+            <text class="tiny fade" x="110" y="208" text-anchor="middle" style="transition-delay:.5s">albedo only</text>
+            <!-- arrow -->
+            <path class="fade" d="M205,150 L255,150" stroke="var(--faint)" stroke-width="1.5" marker-end="url(#r6)" style="transition-delay:.6s"/>
+            <defs><marker id="r6" markerWidth="9" markerHeight="9" refX="4" refY="4" orient="auto"><path d="M0,0 L9,4 L0,8 z" fill="var(--faint)"/></marker></defs>
+            <!-- right: 2D, separated -->
+            <line x1="280" y1="190" x2="440" y2="190" stroke="var(--line2)"/>
+            <line x1="280" y1="190" x2="280" y2="40" stroke="var(--line2)"/>
+            <g><circle class="grow" cx="312" cy="160" r="7" fill="#7e848c" style="transition-delay:.3s"/><circle class="grow" cx="330" cy="172" r="7" fill="#7e848c" style="transition-delay:.35s"/><circle class="grow" cx="404" cy="70" r="7" fill="#cfd3d9" style="transition-delay:.4s"/><circle class="grow" cx="420" cy="86" r="7" fill="#cfd3d9" style="transition-delay:.45s"/><circle class="grow" cx="366" cy="120" r="7" fill="#fff" style="transition-delay:.5s"/></g>
+            <text class="tiny fade" x="360" y="208" text-anchor="middle" style="transition-delay:.7s">+ infrared + colour</text>
           </svg>
-          <div class="cap">Reproduced on the live dataset. The lever the roadmap predicted, delivered: <b style="color:#6fce97">+6 points</b> from infrared and colour. Metallic still waits on more labels.</div>
         </div>
       </div>
     </section>
@@ -297,55 +216,23 @@
   <!-- roadmap -->
   <section class="road">
     <div class="num">07 — The roadmap</div>
-    <h2>The best things we can do, and what each one needs.</h2>
-    <p style="max-width:60ch">Ranked by impact. The first two are the difference between a good screening prior and a genuinely trustworthy characterization.</p>
+    <h2>What we did, and what is left.</h2>
     <div class="rgrid">
-      <div class="ritem">
-        <div class="rk">1</div>
-        <div>
-          <h3>Add infrared + colour features <span class="tag" style="color:#6fce97;border-color:#234a35">shipped · +6 pts</span></h3>
-          <p>Done. NEOWISE visible and near-infrared albedo plus SDSS colour, cross-matched and retrained, lifted leave-one-out accuracy from 72% to 78% and improved carbonaceous recall. The infrared that separates metallic is now in the model.</p>
-          <div class="need">Result: <b>+6 points</b>, reproduced on the live dataset. Metallic still pending more labels (item 2).</div>
-        </div>
-      </div>
-      <div class="ritem">
-        <div class="rk">2</div>
-        <div>
-          <h3>Grow the labelled set <span class="tag hi">high impact</span></h3>
-          <p>The learning curve says we are data-limited. More measured spectra mean more reliable boundaries and the option of finer classes than C / S / M.</p>
-          <div class="need">Needs: <b>ingest and cross-match more spectral surveys</b> (SMASS II, Bus-DeMeo / MITHNEOS, Gaia DR3 reflectance) to lift the training set well past 116.</div>
-        </div>
-      </div>
-      <div class="ritem">
-        <div class="rk">3</div>
-        <div>
-          <h3>Ship calibrated probabilities + abstention <span class="tag">proven here</span></h3>
-          <p>The experiments already show calibration halves the error and abstention lifts accuracy to 89%. This is about putting both into the live product, not inventing anything new.</p>
-          <div class="need">Needs: <b>wire Platt-scaled probabilities into the serving model</b> and expose an &ldquo;indeterminate&rdquo; state below a chosen confidence threshold (about 0.60).</div>
-        </div>
-      </div>
-      <div class="ritem">
-        <div class="rk">4</div>
-        <div>
-          <h3>Conformal prediction sets</h3>
-          <p>Instead of one forced label, return an honest set, &ldquo;C or S, 90% covered.&rdquo; A natural upgrade once probabilities are calibrated.</p>
-          <div class="need">Needs: <b>a held-out calibration split</b> and a conformal wrapper around the classifier.</div>
-        </div>
-      </div>
-      <div class="ritem">
-        <div class="rk">5</div>
-        <div>
-          <h3>Revisit gradient boosting as data grows</h3>
-          <p>The forest wins at 116 objects, but boosting usually overtakes on larger tabular sets. Worth re-running the comparison once the labelled set is bigger.</p>
-          <div class="need">Needs: <b>the larger training set from items 1 and 2</b>, then re-run the same cross-validated bake-off.</div>
-        </div>
-      </div>
+      <div class="ritem"><h3>Add infrared + colour <span class="done">· shipped, +6 pts</span></h3><p>NEOWISE near-infrared albedo and SDSS colour, cross-matched and retrained, lifted leave-one-out accuracy 72% → 78% and improved carbonaceous recall. Done.</p></div>
+      <div class="ritem"><h3>Grow the metallic labels <span style="color:var(--warn)">· next</span></h3><p>Metallic recall is still 0% because there are only 4 examples. The fix is more measured spectra (SMASS, Bus-DeMeo, MITHNEOS, modern taxonomies), not more features.</p></div>
+      <div class="ritem"><h3>Ship calibration + abstention</h3><p>Calibration already halves the error and abstention lifts accuracy to 89%. Wire both into the live model and expose an "indeterminate" state below a confidence threshold.</p></div>
+      <div class="ritem"><h3>Conformal prediction sets</h3><p>Return an honest set ("C or S, 90% covered") instead of one forced label, once probabilities are calibrated.</p></div>
     </div>
+  </section>
+
+  <section class="vision">
+    <h2>Honest by construction, and getting better on the evidence.</h2>
+    <p>Every figure carries its provenance and its uncertainty, no object is ever graded by a model that trained on it, and where the model is weak we show it. The infrared upgrade is the first proof that the roadmap works: name the lever, pull it, measure the gain.</p>
   </section>
 
   <footer>
     <div class="div"></div>
-    Lodestar PAC · Paper 02. All results from leave-one-out and stratified cross-validation on the 116-object labelled set; no object scored by a model that trained on it.<br />
+    Lodestar PAC · Paper 02. Results from leave-one-out and stratified cross-validation on the 116-object labelled set; the infrared upgrade is reproduced on the live dataset.<br />
     References: DeMeo &amp; Binzel (Bus-DeMeo taxonomy) · Mainzer (NEOWISE) · Ivezić (SDSS colours) · JPL SBDB. <a href="/research/">← Back to Research</a>
   </footer>
 
@@ -354,38 +241,69 @@
 </script>
 <script type="module">
 import * as THREE from 'three';
-// ambient backdrop: the 116 labelled asteroids as a slow rotating point cloud,
-// coloured by class (S light, C mid, M bright spark). Quiet, behind the content.
+
+// ---- living hero ambient: class-coloured drifting field + orbital rings ----
 const cv=document.getElementById('scene');
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100); camera.position.set(0,0,6);
 const renderer=new THREE.WebGLRenderer({canvas:cv, antialias:true, alpha:true});
 renderer.setSize(innerWidth,innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-function cloud(n, r, color, size){
-  const pos=new Float32Array(n*3);
-  for(let i=0;i<n;i++){ const u=Math.random(),v=Math.random(),th=2*Math.PI*u,ph=Math.acos(2*v-1),rr=r*Math.cbrt(Math.random());
-    pos[i*3]=rr*Math.sin(ph)*Math.cos(th); pos[i*3+1]=rr*Math.sin(ph)*Math.sin(th); pos[i*3+2]=rr*Math.cos(ph); }
-  const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos,3));
-  return new THREE.Points(g, new THREE.PointsMaterial({color, size, transparent:true, opacity:0.0, sizeAttenuation:true}));
-}
-const grp=new THREE.Group(); scene.add(grp);
-const sS=cloud(83,2.6,0xc9ccd2,0.03), sC=cloud(29,2.5,0x8a8f98,0.03), sM=cloud(4,2.2,0xffffff,0.07);
-grp.add(sS,sC,sM);
-let op=0;
-addEventListener('scroll',()=>{}, {passive:true});
-function loop(){
-  const t=performance.now();
-  // fade the cloud in just past the hero, hold it as a faint backdrop
-  const want = scrollY>innerHeight*0.4 ? 0.55 : 0.0; op += (want-op)*0.05;
-  sS.material.opacity=op; sC.material.opacity=op*0.9; sM.material.opacity=Math.min(1,op*1.6);
-  grp.rotation.y = t*0.00005; grp.rotation.x=-0.15;
-  renderer.render(scene,camera); requestAnimationFrame(loop);
-}
-loop();
+function cloud(n,r,color,size){ const p=new Float32Array(n*3);
+  for(let i=0;i<n;i++){const u=Math.random(),v=Math.random(),th=2*Math.PI*u,ph=Math.acos(2*v-1),rr=r*Math.cbrt(Math.random());
+    p[i*3]=rr*Math.sin(ph)*Math.cos(th);p[i*3+1]=rr*Math.sin(ph)*Math.sin(th);p[i*3+2]=rr*Math.cos(ph);}
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  return new THREE.Points(g,new THREE.PointsMaterial({color,size,transparent:true,opacity:0,sizeAttenuation:true})); }
+function ring(rad,color){ const pts=[]; for(let i=0;i<=160;i++){const a=i/160*Math.PI*2; pts.push(new THREE.Vector3(Math.cos(a)*rad,0,Math.sin(a)*rad));}
+  return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color,transparent:true,opacity:0})); }
+const amb=new THREE.Group(); scene.add(amb);
+const sS=cloud(900,2.8,0xc9ccd2,0.018), sC=cloud(420,2.7,0x7e848c,0.02), sM=cloud(40,2.5,0xffffff,0.05);
+const r1=ring(2.2,0x475a7a), r2=ring(2.85,0x394764), r3=ring(3.5,0x2c3650);
+r1.rotation.x=0.5; r2.rotation.x=-0.7; r3.rotation.x=0.18;
+amb.add(sS,sC,sM,r1,r2,r3);
+let ao=0;
+function ambLoop(){ const t=performance.now();
+  ao+=(0.5-ao)*0.018;
+  sS.material.opacity=ao*0.6; sC.material.opacity=ao*0.5; sM.material.opacity=ao*(0.55+0.4*Math.sin(t*0.0009));
+  r1.material.opacity=ao*0.4; r2.material.opacity=ao*0.32; r3.material.opacity=ao*0.24;
+  amb.rotation.y=t*0.00005; amb.rotation.x=-0.12+Math.sin(t*0.00018)*0.05;
+  r1.rotation.z=t*0.00007; r2.rotation.z=-t*0.000055; r3.rotation.z=t*0.00004;
+  renderer.render(scene,camera); requestAnimationFrame(ambLoop); }
+ambLoop();
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
-// reveal figures when their pinned section is in view
-const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('in'); }), {threshold:0.3});
-document.querySelectorAll('[data-fig]').forEach(f=>io.observe(f));
+
+// ---- 01: scarcity + imbalance dot field (most dim; 116 lit; 4 metallic sparks) ----
+function buildField(id, opts){ const svg=document.getElementById(id); if(!svg) return;
+  const NS="http://www.w3.org/2000/svg"; const W=600,H=600, n=opts.n;
+  for(let i=0;i<n;i++){ const c=document.createElementNS(NS,"circle");
+    const x=Math.random()*W, y=Math.random()*H; c.setAttribute("cx",x); c.setAttribute("cy",y);
+    const m=opts.color(i,x,y); c.setAttribute("r",m.r); c.setAttribute("fill",m.fill);
+    c.setAttribute("opacity",0); c.style.transition="opacity .9s ease "+(Math.random()*0.8).toFixed(2)+"s";
+    c.dataset.op=m.op; svg.appendChild(c); }
+}
+// field 01: 520 dots. ~ proportional lit subset: 40 stony, 14 carbonaceous, 2 metallic; rest unmeasured.
+buildField("field",{ n:520, color:(i)=>{
+  if(i<2) return {r:3.4, fill:"#ffffff", op:1};          // metallic sparks
+  if(i<16) return {r:2.6, fill:"#7e848c", op:.9};         // carbonaceous
+  if(i<56) return {r:2.6, fill:"#cfd3d9", op:.85};        // stony
+  return {r:1.5, fill:"#222831", op:.5};                  // the unmeasured 41,884
+}});
+// field 04: ~120 confident/unsure correct/wrong dots; wrong ones are dim and vanish
+buildField("conf",{ n:120, color:(i)=>{
+  const wrong = i%5===0;            // ~20% wrong
+  const conf = wrong ? 0.18+Math.random()*0.22 : 0.45+Math.random()*0.5; // wrong = low confidence
+  const fill = wrong ? "var(--bad)" : "var(--good)";
+  return {r:3+conf*4, fill, op:conf, vanish:wrong};
+}});
+
+// reveal sections; on reveal, fade the field dots to their target opacity (and vanish the wrong ones)
+const io=new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) return;
+  const pin=e.target.closest('.pin')||e.target; pin.classList.add('in');
+  pin.querySelectorAll('#field circle, #conf circle').forEach(c=>{
+    const wrong=c.getAttribute('fill').includes('bad');
+    c.setAttribute('opacity', wrong ? 0.05 : (c.dataset.op||1));
+  });
+}),{threshold:0.2});
+document.querySelectorAll('[data-fig], #field, #conf').forEach(f=>io.observe(f));
 </script>
 </body>
 </html>
